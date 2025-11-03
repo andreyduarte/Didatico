@@ -58,14 +58,14 @@ def lesson_edit(lesson_id: int):
             )
             if exists:
                 flash("Slug já usado nesta conta.", "danger")
-                return render_template("dashboard/lesson_form.html", form=form, is_edit=True)
+                return render_template("dashboard/lesson_form.html", form=form, is_edit=True, lesson=lesson)
         lesson.title = form.title.data.strip()
         lesson.slug = form.slug.data.strip()
         lesson.description = form.description.data or ""
         db.session.commit()
         flash("Aula atualizada.", "success")
         return redirect(url_for("dashboard.index"))
-    return render_template("dashboard/lesson_form.html", form=form, is_edit=True)
+    return render_template("dashboard/lesson_form.html", form=form, is_edit=True, lesson=lesson)
 
 
 @bp.route("/lesson/<int:lesson_id>/publish", methods=["POST"])

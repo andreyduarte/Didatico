@@ -19,11 +19,8 @@ def create_app() -> Flask:
     # Configurações básicas
     secret_key = os.getenv("SECRET_KEY")
     if not secret_key:
-        if app.debug or app.testing:
-            secret_key = "dev-secret-key-change"
-        else:
-            raise RuntimeError("SECRET_KEY environment variable must be set in production")
-    
+        secret_key = "dev-secret-key-change"
+
     app.config.from_mapping(
         SECRET_KEY=secret_key,
         SQLALCHEMY_DATABASE_URI=os.getenv(
@@ -78,8 +75,8 @@ def create_app() -> Flask:
 
     @app.context_processor
     def inject_render_slide():  # pragma: no cover
-        def render_slide(slide, lesson):
-            theme_name = lesson.theme.name if lesson and lesson.theme else "default"
+        def render_slide(slide, theme):
+            theme_name = theme if isinstance(theme, str) else "default"
             tpl, ctx = layout_engine.render_context(slide, theme_name)
             html = render_template(tpl, **ctx)
             return Markup(html)
