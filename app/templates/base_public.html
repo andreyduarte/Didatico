@@ -350,6 +350,113 @@
           padding: 3.5rem 1rem 1rem;
         }
       }
+
+      /* WYSIWYG Content Styles */
+      .wysiwyg-content {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        font-size: clamp(1.1rem, 2vw, 1.3rem);
+        line-height: 1.8;
+        color: var(--text-secondary);
+      }
+
+      .wysiwyg-content h1,
+      .wysiwyg-content h2,
+      .wysiwyg-content h3,
+      .wysiwyg-content h4,
+      .wysiwyg-content h5,
+      .wysiwyg-content h6 {
+        color: var(--text);
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+      }
+
+      .wysiwyg-content h1:first-child,
+      .wysiwyg-content h2:first-child,
+      .wysiwyg-content h3:first-child {
+        margin-top: 0;
+      }
+
+      .wysiwyg-content h1 { font-size: clamp(2.5rem, 5vw, 3.5rem); }
+      .wysiwyg-content h2 { font-size: clamp(2rem, 4vw, 2.5rem); }
+      .wysiwyg-content h3 { font-size: clamp(1.5rem, 3vw, 2rem); }
+
+      .wysiwyg-content p {
+        margin-bottom: 1.5rem;
+      }
+
+      .wysiwyg-content p:last-child {
+        margin-bottom: 0;
+      }
+
+      .wysiwyg-content ul,
+      .wysiwyg-content ol {
+        margin-bottom: 1.5rem;
+        padding-left: 2rem;
+      }
+
+      .wysiwyg-content li {
+        margin-bottom: 0.75rem;
+      }
+
+      .wysiwyg-content a {
+        color: var(--accent);
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: border-color 0.2s ease;
+      }
+
+      .wysiwyg-content a:hover {
+        border-bottom-color: var(--accent);
+      }
+
+      .wysiwyg-content img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 12px;
+        margin: 2rem 0;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      }
+
+      .wysiwyg-content strong {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .wysiwyg-content em {
+        font-style: italic;
+      }
+
+      .wysiwyg-content blockquote {
+        border-left: 4px solid var(--accent);
+        padding-left: 1.5rem;
+        margin: 2rem 0;
+        font-style: italic;
+        color: var(--text);
+      }
+
+      .wysiwyg-content code {
+        background: rgba(255, 255, 255, 0.08);
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-family: 'Courier New', monospace;
+        font-size: 0.9em;
+      }
+
+      .wysiwyg-content pre {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 2rem 0;
+      }
+
+      .wysiwyg-content pre code {
+        background: none;
+        padding: 0;
+      }
     </style>
   </head>
   <body>

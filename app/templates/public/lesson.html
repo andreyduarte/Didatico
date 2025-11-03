@@ -4,7 +4,13 @@
 {% for slide in lesson.slides %}
   <section id="s{{ loop.index }}" class="slide">
     <div class="slide-content">
-      {{ render_slide(slide, lesson.theme) }}
+      {% if slide.content_html %}
+        <div class="wysiwyg-content">
+          {{ slide.content_html|safe }}
+        </div>
+      {% else %}
+        {{ render_slide(slide, lesson.theme) }}
+      {% endif %}
     </div>
   </section>
 {% endfor %}

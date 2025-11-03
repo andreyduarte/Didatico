@@ -301,5 +301,201 @@ def upload_image(slide_id: int):
         return redirect(url_for("dashboard.blocks_manage", slide_id=slide.id))
 
 
+@bp.route("/lesson/<int:lesson_id>/editor")
+@login_required
+def lesson_editor(lesson_id: int):
+    lesson = Lesson.query.filter_by(id=lesson_id, user_id=current_user.id).first_or_404()
+    return render_template("dashboard/editor.html", lesson=lesson)
+
+
+# API Endpoints
+from flask import jsonify
+import bleach
+
+ALLOWED_TAGS = [
+    'p', 'br', 'strong', 'em', 'u', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'ul', 'ol', 'li', 'a', 'img', 'blockquote', 'code', 'pre', 'div', 'span'
+]
+ALLOWED_ATTRS = {
+    'a': ['href', 'title'],
+    'img': ['src', 'alt', 'title'],
+    '*': ['class']
+}
+
+@bp.route("/api/lesson/<int:lesson_id>/slides")
+@login_required
+def api_get_slides(lesson_id: int):
+    lesson = Lesson.query.filter_by(id=lesson_id, user_id=current_user.id).first_or_404()
+    slides = Slide.query.filter_by(lesson_id=lesson.id).order_by(Slide.order).all()
+    return jsonify([{
+        "id": s.id,
+        "order": s.order,
+        "layout": s.layout,
+        "content_html": s.content_html or ""
+    } for s in slides])
+
+
+@bp.route("/api/slide/<int:slide_id>", methods=["PUT"])
+@login_required
+def api_update_slide(slide_id: int):
+    slide = (
+        db.session.query(Slide)
+        .join(Lesson, Slide.lesson_id == Lesson.id)
+        .filter(Slide.id == slide_id, Lesson.user_id == current_user.id)
+        .first_or_404()
+    )
+    data = request.get_json()
+    if "content_html" in data:
+        # Sanitiza HTML para prevenir XSS
+        clean_html = bleach.clean(
+            data["content_html"],
+            tags=ALLOWED_TAGS,
+            attributes=ALLOWED_ATTRS,
+            strip=True
+        )
+        slide.content_html = clean_html
+    if "layout" in data:
+        slide.layout = data["layout"]
+    db.session.commit()
+    return jsonify({"success": True})
+
+
+@bp.route("/api/lesson/<int:lesson_id>/slide", methods=["POST"])
+@login_required
+def api_create_slide(lesson_id: int):
+    lesson = Lesson.query.filter_by(id=lesson_id, user_id=current_user.id).first_or_404()
+    max_order = db.session.query(db.func.max(Slide.order)).filter_by(lesson_id=lesson.id).scalar()
+    next_order = (max_order or 0) + 1
+    slide = Slide(lesson_id=lesson.id, order=next_order, layout="hero", content_html="")
+    db.session.add(slide)
+    db.session.commit()
+    return jsonify({"id": slide.id, "order": slide.order, "layout": slide.layout, "content_html": ""})
+
+
+@bp.route("/api/slide/<int:slide_id>", methods=["DELETE"])
+@login_required
+def api_delete_slide(slide_id: int):
+    slide = (
+        db.session.query(Slide)
+        .join(Lesson, Slide.lesson_id == Lesson.id)
+        .filter(Slide.id == slide_id, Lesson.user_id == current_user.id)
+        .first_or_404()
+    )
+    db.session.delete(slide)
+    db.session.commit()
+    return jsonify({"success": True})
+
+
+@bp.route("/api/slide/<int:slide_id>/order", methods=["PATCH"])
+@login_required
+def api_reorder_slide(slide_id: int):
+    slide = (
+        db.session.query(Slide)
+        .join(Lesson, Slide.lesson_id == Lesson.id)
+        .filter(Slide.id == slide_id, Lesson.user_id == current_user.id)
+        .first_or_404()
+    )
+    data = request.get_json()
+    direction = data.get("direction")
+    
+    if direction == "up":
+        prev = Slide.query.filter(
+            Slide.lesson_id == slide.lesson_id,
+            Slide.order < slide.order
+        ).order_by(Slide.order.desc()).first()
+        if prev:
+            prev.order, slide.order = slide.order, prev.order
+    elif direction == "down":
+        nxt = Slide.query.filter(
+            Slide.lesson_id == slide.lesson_id,
+            Slide.order > slide.order
+        ).order_by(Slide.order.asc()).first()
+        if nxt:
+            nxt.order, slide.order = slide.order, nxt.order
+    
+    db.session.commit()
+    return jsonify({"success": True})
+
+
+@bp.route("/api/slide/<int:slide_id>/blocks")
+@login_required
+def api_get_blocks(slide_id: int):
+    slide = (
+        db.session.query(Slide)
+        .join(Lesson, Slide.lesson_id == Lesson.id)
+        .filter(Slide.id == slide_id, Lesson.user_id == current_user.id)
+        .first_or_404()
+    )
+    blocks = SlideBlock.query.filter_by(slide_id=slide.id).order_by(SlideBlock.order).all()
+    return jsonify([{
+        "id": b.id,
+        "type": b.type,
+        "payload": b.payload or {},
+        "order": b.order
+    } for b in blocks])
+
+
+@bp.route("/api/slide/<int:slide_id>/block", methods=["POST"])
+@login_required
+def api_create_block(slide_id: int):
+    slide = (
+        db.session.query(Slide)
+        .join(Lesson, Slide.lesson_id == Lesson.id)
+        .filter(Slide.id == slide_id, Lesson.user_id == current_user.id)
+        .first_or_404()
+    )
+    data = request.get_json()
+    max_order = db.session.query(db.func.max(SlideBlock.order)).filter_by(slide_id=slide.id).scalar()
+    next_order = (max_order or 0) + 1
+    
+    block = SlideBlock(
+        slide_id=slide.id,
+        type=data.get("type", "text"),
+        payload=data.get("payload", {}),
+        order=next_order
+    )
+    db.session.add(block)
+    db.session.commit()
+    
+    return jsonify({
+        "id": block.id,
+        "type": block.type,
+        "payload": block.payload,
+        "order": block.order
+    })
+
+
+@bp.route("/api/block/<int:block_id>", methods=["PUT"])
+@login_required
+def api_update_block(block_id: int):
+    block = (
+        db.session.query(SlideBlock)
+        .join(Slide, SlideBlock.slide_id == Slide.id)
+        .join(Lesson, Slide.lesson_id == Lesson.id)
+        .filter(SlideBlock.id == block_id, Lesson.user_id == current_user.id)
+        .first_or_404()
+    )
+    data = request.get_json()
+    if "payload" in data:
+        block.payload = data["payload"]
+    db.session.commit()
+    return jsonify({"success": True})
+
+
+@bp.route("/api/block/<int:block_id>", methods=["DELETE"])
+@login_required
+def api_delete_block(block_id: int):
+    block = (
+        db.session.query(SlideBlock)
+        .join(Slide, SlideBlock.slide_id == Slide.id)
+        .join(Lesson, Slide.lesson_id == Lesson.id)
+        .filter(SlideBlock.id == block_id, Lesson.user_id == current_user.id)
+        .first_or_404()
+    )
+    db.session.delete(block)
+    db.session.commit()
+    return jsonify({"success": True})
+
+
 
 

@@ -18,7 +18,8 @@
         <div class="btn-group">
           <a href="/c/{{ lesson.slug }}" class="btn btn-sm btn-secondary" target="_blank">Ver público</a>
           <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('dashboard.lesson_edit', lesson_id=lesson.id) }}">Editar</a>
-          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('dashboard.slides_manage', lesson_id=lesson.id) }}">Slides</a>
+          <a class="btn btn-sm btn-primary" href="{{ url_for('dashboard.lesson_editor', lesson_id=lesson.id) }}">Editor</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('dashboard.slides_manage', lesson_id=lesson.id) }}">Slides (antigo)</a>
           <form method="post" action="{{ url_for('dashboard.lesson_publish', lesson_id=lesson.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
             {% if lesson.published %}

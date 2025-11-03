@@ -50,6 +50,7 @@ class Slide(db.Model):
     order = db.Column(db.Integer, default=0)
     layout = db.Column(db.String(50), nullable=False, default="hero")
     background = db.Column(db.String(255), nullable=True)
+    content_html = db.Column(db.Text, default="")
 
     blocks = db.relationship(
         "SlideBlock", backref="slide", lazy=True, order_by="SlideBlock.order"

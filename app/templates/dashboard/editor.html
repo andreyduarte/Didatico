@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editor • {{ lesson.title }}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="immersive-editor">
+  <!-- Preview em Tela Cheia (Fundo) -->
+  <div class="preview-fullscreen" id="slidePreview">
+    <div class="preview-placeholder">Selecione um slide para editar</div>
+  </div>
+
+  <!-- Barra Superior Flutuante -->
+  <div class="floating-toolbar">
+    <div class="d-flex align-items-center justify-content-between">
+      <div class="d-flex align-items-center gap-2">
+        <a href="{{ url_for('dashboard.index') }}" class="btn btn-sm btn-outline-light">← Voltar</a>
+        <span class="text-white fw-semibold">{{ lesson.title }}</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <label class="small mb-0 me-2 text-white">Layout:</label>
+        <select id="layoutSelect" class="form-select form-select-sm" style="width: 180px;" disabled>
+          <option value="hero">Hero</option>
+          <option value="two_cols">Duas Colunas</option>
+          <option value="split">Split (Título + Texto)</option>
+          <option value="gallery">Galeria</option>
+          <option value="quote">Citação</option>
+        </select>
+        <button id="saveBtn" class="btn btn-sm btn-success" disabled>Salvar</button>
+        <a href="{{ url_for('public.view_lesson', slug=lesson.slug) }}" class="btn btn-sm btn-light" target="_blank">Apresentar</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Painel Esquerdo Flutuante: Thumbnails -->
+  <div class="floating-panel floating-left">
+    <button id="addSlideBtn" class="btn btn-sm btn-primary w-100 mb-2">+ Novo Slide</button>
+    <div id="thumbnailsList" class="thumbnails-scroll">
+      <!-- Thumbnails serão carregados via JS -->
+    </div>
+  </div>
+
+  <!-- Painel Direito Flutuante: Propriedades -->
+  <div class="floating-panel floating-right">
+    <h6 class="mb-3 text-white">Propriedades</h6>
+    <div id="propertiesArea">
+      <p class="text-white-50 small">Selecione um slide</p>
+    </div>
+  </div>
+
+  <!-- Indicador de Navegação -->
+  <div class="navigation-hint">
+    <span class="kbd-key">←</span>
+    <span class="kbd-key">→</span>
+    <span class="text-white-50 small ms-2">Navegar</span>
+  </div>
+</div>
+
+<style>
+/* Reset e Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Container Imersivo */
+.immersive-editor {
+  width: 100vw;
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Preview em Tela Cheia */
+.preview-fullscreen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #0a0d14;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px 20px;
+  overflow: auto;
+}
+
+.preview-placeholder {
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 1.5rem;
+}
+
+/* Barra Superior Flutuante - Liquid Glass */
+.floating-toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.15) 0%,
+    rgba(139, 92, 246, 0.1) 50%,
+    rgba(59, 130, 246, 0.15) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.1),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+  opacity: 0.5;
+}
+
+.floating-toolbar:hover {
+  opacity: 1;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.25) 0%,
+    rgba(139, 92, 246, 0.2) 50%,
+    rgba(59, 130, 246, 0.25) 100%);
+  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.2),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Painéis Flutuantes - Liquid Glass */
+.floating-panel {
+  position: fixed;
+  top: 70px;
+  bottom: 20px;
+  width: 220px;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.12) 0%,
+    rgba(139, 92, 246, 0.08) 50%,
+    rgba(59, 130, 246, 0.12) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  padding: 16px;
+  z-index: 900;
+  transition: all 0.3s ease;
+  opacity: 0.5;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.1),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+.floating-panel:hover {
+  opacity: 1;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.22) 0%,
+    rgba(139, 92, 246, 0.18) 50%,
+    rgba(59, 130, 246, 0.22) 100%);
+  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.2),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+}
+
+.floating-left {
+  left: 20px;
+}
+
+.floating-right {
+  right: 20px;
+  width: 320px;
+}
+
+.thumbnails-scroll {
+  max-height: calc(100vh - 180px);
+  overflow-y: auto;
+}
+.slide-thumbnail {
+  width: 100%;
+  aspect-ratio: 16/9;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  font-size: 0.7rem;
+  padding: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+.slide-thumbnail:hover {
+  border-color: rgba(99, 102, 241, 0.6);
+  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.1) 0%,
+    rgba(139, 92, 246, 0.08) 100%);
+  transform: translateY(-2px);
+}
+.slide-thumbnail.active {
+  border-color: #6366f1;
+  border-width: 2px;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.3),
+              0 8px 24px rgba(99, 102, 241, 0.4),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.2) 0%,
+    rgba(139, 92, 246, 0.15) 100%);
+  transform: scale(1.02);
+}
+.slide-thumbnail-number {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.9) 0%,
+    rgba(139, 92, 246, 0.8) 100%);
+  color: white;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.4),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+.slide-thumbnail-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: none;
+}
+.slide-thumbnail:hover .slide-thumbnail-actions {
+  display: flex;
+  gap: 4px;
+}
+.slide-thumbnail .small {
+  color: rgba(255, 255, 255, 0.6);
+}
+/* Preview ocupa tela cheia, sem container */
+.preview-fullscreen > div:not(.preview-placeholder) {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+/* Estilos dos layouts (replicando apresentação pública) */
+.slide-preview-container h1,
+.slide-preview-container h2,
+.slide-preview-container h3 {
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.slide-preview-container .display-6 {
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 700;
+}
+
+.slide-preview-container img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Hero Slide */
+.hero-slide h1 {
+  margin-bottom: 0;
+}
+
+.hero-image img {
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Two Columns Slide */
+.two-cols-content {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.8;
+  color: #a8b3c8;
+}
+
+.two-cols-content h1,
+.two-cols-content h2,
+.two-cols-content h3 {
+  color: #ffffff;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.two-cols-image img {
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Gallery Slide */
+.gallery-item {
+  position: relative;
+  overflow: hidden;
+  border-radius: 12px;
+  aspect-ratio: 4 / 3;
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Quote Slide */
+.quote-slide {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.quote-slide blockquote {
+  border: none;
+  padding: 0;
+}
+
+.quote-slide p {
+  color: #ffffff;
+  font-style: italic;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Split Slide */
+.split-content {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.8;
+  color: #a8b3c8;
+}
+
+.split-image img {
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+.property-group {
+  margin-bottom: 1.5rem;
+}
+.property-group label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  display: block;
+  color: rgba(255, 255, 255, 0.9);
+}
+.property-group input,
+.property-group textarea,
+.property-group select {
+  width: 100%;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 8px;
+  padding: 8px 12px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.property-group input:focus,
+.property-group textarea:focus {
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.15) 0%,
+    rgba(139, 92, 246, 0.1) 100%);
+  border-color: #6366f1;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25),
+              inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+.property-group textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+.btn-icon {
+  padding: 2px 6px;
+  font-size: 0.75rem;
+}
+
+/* Scrollbar customizada - Liquid Glass */
+.floating-panel::-webkit-scrollbar,
+.thumbnails-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.floating-panel::-webkit-scrollbar-track,
+.thumbnails-scroll::-webkit-scrollbar-track {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(255, 255, 255, 0.02) 100%);
+  border-radius: 4px;
+  margin: 4px 0;
+}
+.floating-panel::-webkit-scrollbar-thumb,
+.thumbnails-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.4) 0%,
+    rgba(139, 92, 246, 0.3) 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+.floating-panel::-webkit-scrollbar-thumb:hover,
+.thumbnails-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.6) 0%,
+    rgba(139, 92, 246, 0.5) 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Botões nos painéis - Liquid Glass */
+.floating-panel .btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+.floating-panel .btn-primary:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+.floating-panel .btn-secondary {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.1) 0%,
+    rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+.floating-panel .btn-secondary:hover {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.1) 100%);
+  border-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+.floating-panel .btn-danger {
+  background: linear-gradient(135deg, 
+    rgba(239, 68, 68, 0.8) 0%,
+    rgba(220, 38, 38, 0.7) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 16px rgba(239, 68, 68, 0.3),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+.floating-panel .btn-danger:hover {
+  background: linear-gradient(135deg, 
+    rgba(220, 38, 38, 0.9) 0%,
+    rgba(185, 28, 28, 0.8) 100%);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.25);
+  transform: translateY(-1px);
+}
+
+/* Input group nos painéis */
+.floating-panel .input-group .form-control {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.05) 100%);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Placeholder dos inputs */
+.property-group input::placeholder,
+.property-group textarea::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* Conteúdo do slide */
+.slide-content {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* Indicador de Navegação */
+.navigation-hint {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 800;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.15) 0%,
+    rgba(139, 92, 246, 0.1) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.15),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  opacity: 0.4;
+  transition: opacity 0.3s ease;
+}
+
+.navigation-hint:hover {
+  opacity: 1;
+}
+
+.kbd-key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.15) 0%,
+    rgba(255, 255, 255, 0.08) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.2);
+}
+
+/* Animação de transição entre slides */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-content {
+  animation: slideIn 0.3s ease-out;
+}
+</style>
+
+<script>
+const lessonId = {{ lesson.id }};
+let currentSlideId = null;
+let slides = [];
+let blocks = [];
+let saveTimeout = null;
+const csrfToken = '{{ csrf_token() }}';
+
+// Carregar slides
+async function loadSlides() {
+  const res = await fetch(`/api/lesson/${lessonId}/slides`);
+  slides = await res.json();
+  renderThumbnails();
+  if (slides.length > 0) {
+    selectSlide(slides[0].id);
+  }
+}
+
+// Renderizar thumbnails
+function renderThumbnails() {
+  const list = document.getElementById('thumbnailsList');
+  list.innerHTML = slides.map(s => `
+    <div class="slide-thumbnail ${s.id === currentSlideId ? 'active' : ''}" 
+         data-id="${s.id}"
+         onclick="selectSlide(${s.id})">
+      <div class="slide-thumbnail-number">${s.order}</div>
+      <div class="slide-thumbnail-actions">
+        <button class="btn btn-icon btn-danger" onclick="event.stopPropagation(); deleteSlide(${s.id})" title="Deletar">×</button>
+      </div>
+      <div class="small text-muted text-center mt-3">${s.layout}</div>
+    </div>
+  `).join('');
+}
+
+// Selecionar slide
+async function selectSlide(slideId) {
+  currentSlideId = slideId;
+  const slide = slides.find(s => s.id === slideId);
+  if (!slide) return;
+
+  // Carregar blocos do slide
+  const res = await fetch(`/api/slide/${slideId}/blocks`);
+  blocks = await res.json();
+
+  // Atualizar layout selector
+  const layoutSelect = document.getElementById('layoutSelect');
+  layoutSelect.value = slide.layout;
+  layoutSelect.disabled = false;
+
+  // Habilitar botão salvar
+  document.getElementById('saveBtn').disabled = false;
+
+  // Renderizar preview e propriedades
+  renderPreview();
+  renderProperties();
+  renderThumbnails();
+}
+
+// Renderizar preview do slide (replicando templates)
+function renderPreview() {
+  const slide = slides.find(s => s.id === currentSlideId);
+  if (!slide) {
+    document.getElementById('slidePreview').innerHTML = '<div class="preview-placeholder">Selecione um slide para editar</div>';
+    return;
+  }
+
+  const preview = document.getElementById('slidePreview');
+  const textBlocks = blocks.filter(b => b.type === 'text');
+  const imageBlocks = blocks.filter(b => b.type === 'image');
+  
+  let html = '<div class="slide-content">';
+  
+  if (slide.layout === 'hero') {
+    const title = textBlocks[0]?.payload?.text || 'Título do slide';
+    const img = imageBlocks[0]?.payload?.url;
+    
+    html = `
+      <div class="hero-slide">
+        <div class="row align-items-center g-5">
+          <div class="col-12 ${img ? 'col-lg-6' : 'col-lg-12 text-center'}">
+            <h1 class="display-6">${title}</h1>
+          </div>
+          ${img ? `
+          <div class="col-12 col-lg-6">
+            <div class="hero-image">
+              <img src="${img}" class="img-fluid" alt="imagem" />
+            </div>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  } else if (slide.layout === 'two_cols') {
+    const text = textBlocks[0]?.payload?.text || 'Conteúdo';
+    const img = imageBlocks[0]?.payload?.url;
+    
+    html = `
+      <div class="two-cols-slide">
+        <div class="row g-5 align-items-center">
+          <div class="col-12 ${img ? 'col-md-6' : 'col-md-12'}">
+            <div class="two-cols-content">
+              ${text}
+            </div>
+          </div>
+          ${img ? `
+          <div class="col-12 col-md-6">
+            <div class="two-cols-image">
+              <img src="${img}" class="img-fluid" alt="imagem" />
+            </div>
+          </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  } else if (slide.layout === 'quote') {
+    const quote = textBlocks[0]?.payload?.text || 'Citação';
+    
+    html = `
+      <div class="quote-slide">
+        <figure class="text-center m-0">
+          <blockquote class="blockquote m-0">
+            <p class="display-6">"${quote}"</p>
+          </blockquote>
+        </figure>
+      </div>
+    `;
+  } else if (slide.layout === 'gallery') {
+    const images = imageBlocks.filter(b => b.payload?.url).map(b => b.payload.url);
+    const colClass = images.length > 4 ? 'col-6 col-md-4 col-lg-3' : 'col-6 col-md-6';
+    
+    html = `
+      <div class="gallery-slide">
+        <div class="row g-4">
+          ${images.map((url, i) => `
+            <div class="${colClass}">
+              <div class="gallery-item">
+                <img src="${url}" class="img-fluid" alt="imagem ${i + 1}" />
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  } else if (slide.layout === 'split') {
+    const title = textBlocks[0]?.payload?.text || 'Título do slide';
+    const text = textBlocks[1]?.payload?.text || 'Conteúdo';
+    const img = imageBlocks[0]?.payload?.url;
+    
+    html = `
+      <div class="split-slide">
+        <div class="row g-5 align-items-center">
+          <div class="col-12 ${img ? 'col-md-6' : 'col-md-12'}">
+            <h2 class="display-6 mb-3">${title}</h2>
+            <div>${text}</div>
+          </div>
+          ${img ? `
+          <div class="col-12 col-md-6">
+            <img src="${img}" class="img-fluid" alt="imagem" />
+          </div>
+          ` : ''}
+        </div>
+      </div>
+    `;
+  }
+  
+  html += '</div>';
+  preview.innerHTML = html;
+}
+
+// Renderizar painel de propriedades
+function renderProperties() {
+  const slide = slides.find(s => s.id === currentSlideId);
+  if (!slide) {
+    document.getElementById('propertiesArea').innerHTML = '<p class="text-white-50 small">Selecione um slide</p>';
+    return;
+  }
+
+  const props = document.getElementById('propertiesArea');
+  let html = '';
+
+  // Campos baseados no layout
+  if (slide.layout === 'hero') {
+    const textBlock = blocks.find(b => b.type === 'text') || {};
+    const imageBlock = blocks.find(b => b.type === 'image') || {};
+    
+    html += `
+      <div class="property-group">
+        <label>Título</label>
+        <textarea class="form-control" id="prop_text_0" onchange="updateBlock('text', 0, this.value)">${textBlock.payload?.text || ''}</textarea>
+      </div>
+      <div class="property-group">
+        <label>URL da Imagem (opcional)</label>
+        <input type="text" class="form-control" id="prop_image_0" value="${imageBlock.payload?.url || ''}" onchange="updateBlock('image', 0, this.value)">
+        <button class="btn btn-sm btn-secondary mt-2" onclick="uploadImage()">Upload</button>
+      </div>
+    `;
+  } else if (slide.layout === 'two_cols') {
+    const textBlock = blocks.find(b => b.type === 'text') || {};
+    const imageBlock = blocks.find(b => b.type === 'image') || {};
+    
+    html += `
+      <div class="property-group">
+        <label>Texto</label>
+        <textarea class="form-control" id="prop_text_0" onchange="updateBlock('text', 0, this.value)">${textBlock.payload?.text || ''}</textarea>
+      </div>
+      <div class="property-group">
+        <label>URL da Imagem (opcional)</label>
+        <input type="text" class="form-control" id="prop_image_0" value="${imageBlock.payload?.url || ''}" onchange="updateBlock('image', 0, this.value)">
+        <button class="btn btn-sm btn-secondary mt-2" onclick="uploadImage()">Upload</button>
+      </div>
+    `;
+  } else if (slide.layout === 'quote') {
+    const textBlock = blocks.find(b => b.type === 'text') || {};
+    
+    html += `
+      <div class="property-group">
+        <label>Citação</label>
+        <textarea class="form-control" id="prop_text_0" onchange="updateBlock('text', 0, this.value)">${textBlock.payload?.text || ''}</textarea>
+      </div>
+    `;
+  } else if (slide.layout === 'gallery') {
+    html += '<div class="property-group"><label>Imagens</label>';
+    blocks.filter(b => b.type === 'image').forEach((b, i) => {
+      html += `
+        <div class="input-group mb-2">
+          <input type="text" class="form-control form-control-sm" value="${b.payload?.url || ''}" onchange="updateBlock('image', ${i}, this.value)">
+          <button class="btn btn-sm btn-danger" onclick="removeBlock(${b.id})">×</button>
+        </div>
+      `;
+    });
+    html += '<button class="btn btn-sm btn-primary mt-2" onclick="addImageBlock()">+ Imagem</button></div>';
+  } else if (slide.layout === 'split') {
+    const titleBlock = blocks.filter(b => b.type === 'text')[0] || {};
+    const textBlock = blocks.filter(b => b.type === 'text')[1] || {};
+    const imageBlock = blocks.find(b => b.type === 'image') || {};
+    
+    html += `
+      <div class="property-group">
+        <label>Título</label>
+        <textarea class="form-control" id="prop_text_0" onchange="updateBlock('text', 0, this.value)">${titleBlock.payload?.text || ''}</textarea>
+      </div>
+      <div class="property-group">
+        <label>Texto</label>
+        <textarea class="form-control" id="prop_text_1" onchange="updateBlock('text', 1, this.value)">${textBlock.payload?.text || ''}</textarea>
+      </div>
+      <div class="property-group">
+        <label>URL da Imagem (opcional)</label>
+        <input type="text" class="form-control" id="prop_image_0" value="${imageBlock.payload?.url || ''}" onchange="updateBlock('image', 0, this.value)">
+        <button class="btn btn-sm btn-secondary mt-2" onclick="uploadImage()">Upload</button>
+      </div>
+    `;
+  }
+
+  props.innerHTML = html;
+}
+
+// Atualizar bloco
+async function updateBlock(type, index, value) {
+  const block = blocks.filter(b => b.type === type)[index];
+  
+  if (!block) {
+    // Criar novo bloco
+    const res = await fetch(`/api/slide/${currentSlideId}/block`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      body: JSON.stringify({
+        type: type,
+        payload: type === 'text' ? { text: value } : { url: value }
+      })
+    });
+    const newBlock = await res.json();
+    blocks.push(newBlock);
+  } else {
+    // Atualizar bloco existente
+    block.payload = type === 'text' ? { text: value } : { url: value };
+    await fetch(`/api/block/${block.id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrfToken
+      },
+      body: JSON.stringify({ payload: block.payload })
+    });
+  }
+  
+  renderPreview();
+}
+
+// Salvar layout
+document.getElementById('layoutSelect').addEventListener('change', async (e) => {
+  const slide = slides.find(s => s.id === currentSlideId);
+  if (!slide) return;
+  
+  slide.layout = e.target.value;
+  
+  await fetch(`/api/slide/${currentSlideId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify({ layout: slide.layout })
+  });
+  
+  renderPreview();
+  renderProperties();
+  renderThumbnails();
+});
+
+// Botão salvar (feedback visual)
+document.getElementById('saveBtn').addEventListener('click', () => {
+  const btn = document.getElementById('saveBtn');
+  btn.textContent = 'Salvo!';
+  btn.classList.remove('btn-success');
+  btn.classList.add('btn-secondary');
+  setTimeout(() => {
+    btn.textContent = 'Salvar';
+    btn.classList.remove('btn-secondary');
+    btn.classList.add('btn-success');
+  }, 1500);
+});
+
+// Adicionar slide
+document.getElementById('addSlideBtn').addEventListener('click', async () => {
+  const res = await fetch(`/api/lesson/${lessonId}/slide`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    }
+  });
+  const newSlide = await res.json();
+  slides.push(newSlide);
+  renderThumbnails();
+  selectSlide(newSlide.id);
+});
+
+// Deletar slide
+async function deleteSlide(slideId) {
+  if (!confirm('Remover este slide?')) return;
+  
+  await fetch(`/api/slide/${slideId}`, {
+    method: 'DELETE',
+    headers: { 'X-CSRFToken': csrfToken }
+  });
+  
+  slides = slides.filter(s => s.id !== slideId);
+  
+  if (currentSlideId === slideId) {
+    currentSlideId = null;
+    document.getElementById('slidePreview').innerHTML = '<div class="alert alert-info m-4">Selecione um slide para editar</div>';
+    document.getElementById('propertiesArea').innerHTML = '<p class="text-muted small">Selecione um slide</p>';
+    document.getElementById('layoutSelect').disabled = true;
+    document.getElementById('saveBtn').disabled = true;
+  }
+  
+  renderThumbnails();
+}
+
+// Upload de imagem
+function uploadImage() {
+  alert('Função de upload em desenvolvimento. Por enquanto, cole a URL da imagem.');
+}
+
+// Adicionar bloco de imagem
+async function addImageBlock() {
+  const url = prompt('URL da imagem:');
+  if (!url) return;
+  
+  const res = await fetch(`/api/slide/${currentSlideId}/block`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify({
+      type: 'image',
+      payload: { url }
+    })
+  });
+  
+  const newBlock = await res.json();
+  blocks.push(newBlock);
+  renderPreview();
+  renderProperties();
+}
+
+// Remover bloco
+async function removeBlock(blockId) {
+  await fetch(`/api/block/${blockId}`, {
+    method: 'DELETE',
+    headers: { 'X-CSRFToken': csrfToken }
+  });
+  
+  blocks = blocks.filter(b => b.id !== blockId);
+  renderPreview();
+  renderProperties();
+}
+
+// Navegação por setas
+document.addEventListener('keydown', (e) => {
+  // Ignora se estiver digitando em input/textarea
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+    return;
+  }
+
+  if (!currentSlideId || slides.length === 0) return;
+
+  const currentIndex = slides.findIndex(s => s.id === currentSlideId);
+  
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+    // Slide anterior
+    e.preventDefault();
+    if (currentIndex > 0) {
+      selectSlide(slides[currentIndex - 1].id);
+    }
+  } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+    // Próximo slide
+    e.preventDefault();
+    if (currentIndex < slides.length - 1) {
+      selectSlide(slides[currentIndex + 1].id);
+    }
+  } else if (e.key === 'Home') {
+    // Primeiro slide
+    e.preventDefault();
+    selectSlide(slides[0].id);
+  } else if (e.key === 'End') {
+    // Último slide
+    e.preventDefault();
+    selectSlide(slides[slides.length - 1].id);
+  }
+});
+
+// Carregar ao iniciar
+loadSlides();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
