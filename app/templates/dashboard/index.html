@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Minhas aulas{% endblock %}
+{% block content %}
+<div class="d-flex align-items-center justify-content-between mb-3">
+  <h1 class="h4 m-0">Minhas aulas</h1>
+  <a class="btn btn-sm btn-primary" href="{{ url_for('dashboard.lesson_new') }}">Nova aula</a>
+  
+</div>
+
+{% if lessons %}
+  <div class="list-group">
+    {% for lesson in lessons %}
+      <div class="list-group-item d-flex align-items-center justify-content-between">
+        <div>
+          <div class="fw-semibold">{{ lesson.title }}</div>
+          <div class="small text-muted">/{{ lesson.slug }} {% if lesson.published %}• publicado{% else %}• rascunho{% endif %}</div>
+        </div>
+        <div class="btn-group">
+          <a href="/c/{{ lesson.slug }}" class="btn btn-sm btn-secondary" target="_blank">Ver público</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('dashboard.lesson_edit', lesson_id=lesson.id) }}">Editar</a>
+          <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('dashboard.slides_manage', lesson_id=lesson.id) }}">Slides</a>
+          <form method="post" action="{{ url_for('dashboard.lesson_publish', lesson_id=lesson.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            {% if lesson.published %}
+              <input type="hidden" name="action" value="unpublish" />
+              <button class="btn btn-sm btn-outline-warning" type="submit">Despublicar</button>
+            {% else %}
+              <input type="hidden" name="action" value="publish" />
+              <button class="btn btn-sm btn-outline-success" type="submit">Publicar</button>
+            {% endif %}
+          </form>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="alert alert-info">Você ainda não tem aulas. Crie a primeira para começar.</div>
+{% endif %}
+{% endblock %}
+
+

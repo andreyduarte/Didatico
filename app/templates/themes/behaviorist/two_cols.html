@@ -1,0 +1,16 @@
+<div class="behaviorist-two-cols-slide">
+  <div class="row g-5">
+    <div class="col-md-6">
+      <div class="behaviorist-two-cols-content">
+        {{ text | safe }}
+      </div>
+    </div>
+    <div class="col-md-6">
+      {% if image %}
+        <div class="behaviorist-two-cols-image">
+          <img src="{{ image }}" alt="Slide Image">
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</div>

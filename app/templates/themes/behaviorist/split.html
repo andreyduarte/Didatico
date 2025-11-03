@@ -1,0 +1,13 @@
+<div class="behaviorist-split-slide">
+  <div class="behaviorist-split-left">
+    <h1 class="display-6">{{ title }}</h1>
+    <div class="behaviorist-split-content">
+      {{ text | safe }}
+    </div>
+  </div>
+  <div class="behaviorist-split-right">
+    {% if image %}
+      <img src="{{ image }}" alt="Slide Image">
+    {% endif %}
+  </div>
+</div>

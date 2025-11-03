@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Editar bloco' if is_edit else 'Novo bloco' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <h1 class="h4 mb-3">{{ 'Editar bloco' if is_edit else 'Novo bloco' }}</h1>
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <div class="mb-3">
+        {{ form.type.label(class_='form-label') }}
+        {{ form.type(class_='form-control', placeholder='text | image | embed | list', readonly=is_edit) }}
+      </div>
+      <div class="mb-3">
+        {{ form.text.label(class_='form-label') }}
+        {{ form.text(class_='form-control', rows=4) }}
+      </div>
+      <div class="mb-3">
+        {{ form.image_url.label(class_='form-label') }}
+        {{ form.image_url(class_='form-control', placeholder='https://...') }}
+      </div>
+      <div class="mb-3">
+        {{ form.embed_url.label(class_='form-label') }}
+        {{ form.embed_url(class_='form-control', placeholder='https://...') }}
+      </div>
+      <div class="mb-3">
+        {{ form.list_items.label(class_='form-label') }}
+        {{ form.list_items(class_='form-control', rows=4) }}
+      </div>
+      {{ form.submit(class_='btn btn-primary') }}
+      <a href="{{ request.referrer or url_for('dashboard.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+

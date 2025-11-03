@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}{{ 'Editar aula' if is_edit else 'Nova aula' }}{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-12 col-lg-8">
+    <h1 class="h4 mb-3">{{ 'Editar aula' if is_edit else 'Nova aula' }}</h1>
+    <form method="post">
+      {{ form.hidden_tag() }}
+      <div class="mb-3">
+        {{ form.title.label(class_='form-label') }}
+        {{ form.title(class_='form-control') }}
+      </div>
+      <div class="mb-3">
+        {{ form.slug.label(class_='form-label') }}
+        {{ form.slug(class_='form-control', placeholder='ex: intro-algebra') }}
+        <div class="form-text">A URL pública será /c/&lt;slug&gt;</div>
+      </div>
+      <div class="mb-3">
+        {{ form.description.label(class_='form-label') }}
+        {{ form.description(class_='form-control', rows=4) }}
+      </div>
+      {{ form.submit(class_='btn btn-primary') }}
+      <a href="{{ url_for('dashboard.index') }}" class="btn btn-outline-secondary">Cancelar</a>
+      {% if is_edit %}
+        <a href="{{ url_for('dashboard.slides_manage', lesson_id=form._obj.id if form._obj else None) }}" class="btn btn-secondary">Gerenciar slides</a>
+      {% endif %}
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+

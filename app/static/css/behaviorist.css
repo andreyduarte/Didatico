@@ -1,0 +1,185 @@
+:root {
+  --behaviorist-bg-purple: #6a0dad; /* Cor de fundo roxa */
+  --behaviorist-bg-green: #2e8b57; /* Cor de fundo verde para a barra lateral */
+  --behaviorist-text-white: #ffffff; /* Texto branco */
+  --behaviorist-text-light-gray: #e0e0e0; /* Texto cinza claro */
+  --behaviorist-border-white: rgba(255, 255, 255, 0.2); /* Borda branca */
+}
+
+/* Estilos gerais para o tema behaviorist */
+.behaviorist-hero-slide,
+.behaviorist-split-slide,
+.behaviorist-quote-slide,
+.behaviorist-two-cols-slide {
+  background-color: var(--behaviorist-bg-purple);
+  color: var(--behaviorist-text-white);
+  font-family: 'Arial', sans-serif;
+}
+
+/* Hero Slide */
+.behaviorist-hero-slide {
+  text-align: center;
+}
+
+.behaviorist-hero-slide h1 {
+  font-size: clamp(3rem, 6vw, 5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: -0.03em;
+  background: linear-gradient(45deg, #ffffff, #e0e0e0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Split Slide (com barra lateral verde) */
+.behaviorist-split-slide {
+  display: flex;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.behaviorist-split-left {
+  flex: 0 0 40%; /* Largura da barra lateral */
+  background-color: var(--behaviorist-bg-green);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 3rem;
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+}
+
+.behaviorist-split-left h1 {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(45deg, #ffffff, #f0f0f0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.behaviorist-split-content {
+  font-size: clamp(1rem, 2vw, 1.3rem);
+  line-height: 1.7;
+  color: var(--behaviorist-text-light-gray);
+}
+
+.behaviorist-split-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.behaviorist-split-right img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Quote Slide */
+.behaviorist-quote-slide {
+  text-align: center;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.behaviorist-quote-slide p {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--behaviorist-text-white);
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Two Columns Slide */
+.behaviorist-two-cols-slide {
+  padding: 3rem;
+}
+
+.behaviorist-two-cols-content {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  line-height: 1.8;
+  color: var(--behaviorist-text-light-gray);
+}
+
+.behaviorist-two-cols-content h1,
+.behaviorist-two-cols-content h2,
+.behaviorist-two-cols-content h3,
+.behaviorist-two-cols-content h4,
+.behaviorist-two-cols-content h5,
+.behaviorist-two-cols-content h6 {
+  color: var(--behaviorist-text-white);
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+.behaviorist-two-cols-content h1:first-child,
+.behaviorist-two-cols-content h2:first-child,
+.behaviorist-two-cols-content h3:first-child {
+  margin-top: 0;
+}
+
+.behaviorist-two-cols-content p {
+  margin-bottom: 1.5rem;
+}
+
+.behaviorist-two-cols-content p:last-child {
+  margin-bottom: 0;
+}
+
+.behaviorist-two-cols-content ul,
+.behaviorist-two-cols-content ol {
+  margin-bottom: 1.5rem;
+  padding-left: 1.5rem;
+}
+
+.behaviorist-two-cols-content li {
+  margin-bottom: 0.5rem;
+}
+
+.behaviorist-two-cols-image img {
+  width: 100%;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+  .behaviorist-split-slide {
+    flex-direction: column;
+  }
+
+  .behaviorist-split-left {
+    flex: none;
+    width: 100%;
+    height: auto;
+    padding: 2rem;
+  }
+
+  .behaviorist-split-right {
+    flex: none;
+    width: 100%;
+    padding: 2rem;
+  }
+
+  .behaviorist-hero-slide h1,
+  .behaviorist-quote-slide p {
+    font-size: clamp(2rem, 5vw, 3rem);
+  }
+}
+
+@media (max-width: 576px) {
+  .behaviorist-split-left,
+  .behaviorist-split-right,
+  .behaviorist-two-cols-slide {
+    padding: 1.5rem;
+  }
+}

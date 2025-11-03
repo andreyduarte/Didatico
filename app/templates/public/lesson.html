@@ -1,0 +1,13 @@
+{% extends 'base_public.html' %}
+{% block title %}{{ lesson.title }}{% endblock %}
+{% block content %}
+{% for slide in lesson.slides %}
+  <section id="s{{ loop.index }}" class="slide">
+    <div class="slide-content">
+      {{ render_slide(slide, lesson.theme) }}
+    </div>
+  </section>
+{% endfor %}
+{% endblock %}
+
+
