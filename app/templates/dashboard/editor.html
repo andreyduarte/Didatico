@@ -43,11 +43,32 @@
     </div>
   </div>
 
-  <!-- Painel Direito Flutuante: Propriedades -->
-  <div class="floating-panel floating-right">
-    <h6 class="mb-3 text-white">Propriedades</h6>
-    <div id="propertiesArea">
-      <p class="text-white-50 small">Selecione um slide</p>
+  <!-- Modal de Imagem -->
+  <div class="modal fade" id="imageModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content glass-modal">
+        <div class="modal-header border-0">
+          <h5 class="modal-title text-white">Editar Imagem</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label text-white">URL da Imagem</label>
+            <input type="text" class="form-control glass-input" id="imageUrlInput" placeholder="https://exemplo.com/imagem.jpg">
+          </div>
+          <div class="text-center text-white-50 small mb-3">ou</div>
+          <div>
+            <label class="btn btn-outline-light w-100" for="imageFileInput">
+              <i class="bi bi-upload"></i> Upload de Arquivo
+            </label>
+            <input type="file" class="d-none" id="imageFileInput" accept="image/*">
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" id="saveImageBtn">Salvar</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -169,10 +190,7 @@ body {
   left: 20px;
 }
 
-.floating-right {
-  right: 20px;
-  width: 320px;
-}
+
 
 .thumbnails-scroll {
   max-height: calc(100vh - 180px);
@@ -182,8 +200,8 @@ body {
   width: 100%;
   aspect-ratio: 16/9;
   background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.05) 0%,
-    rgba(255, 255, 255, 0.02) 100%);
+    rgba(10, 13, 20, 0.8) 0%,
+    rgba(20, 23, 30, 0.8) 100%);
   border: 1.5px solid rgba(255, 255, 255, 0.2);
   border-radius: 10px;
   margin-bottom: 12px;
@@ -193,7 +211,10 @@ body {
   overflow: hidden;
   font-size: 0.7rem;
   padding: 8px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .slide-thumbnail:hover {
   border-color: rgba(99, 102, 241, 0.6);
@@ -243,6 +264,76 @@ body {
 }
 .slide-thumbnail .small {
   color: rgba(255, 255, 255, 0.6);
+}
+
+/* Thumbnail Preview Styles */
+.thumbnail-preview {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  line-height: 1.2;
+  overflow: hidden;
+}
+
+.thumb-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.55rem;
+  text-align: center;
+  padding: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.thumb-img {
+  width: 100%;
+  height: 40px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 4px;
+  margin-top: 4px;
+}
+
+.thumb-hero,
+.thumb-two-cols,
+.thumb-split {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px;
+}
+
+.thumb-quote {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.5rem;
+  font-style: italic;
+  text-align: center;
+  padding: 8px;
+}
+
+.thumb-gallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  width: 100%;
+  padding: 4px;
+}
+
+.thumb-img-small {
+  width: 100%;
+  height: 30px;
+  background-size: cover;
+  background-position: center;
+  border-radius: 2px;
+}
+
+.thumb-empty {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.6rem;
+  text-align: center;
 }
 /* Preview ocupa tela cheia, sem container */
 .preview-fullscreen > div:not(.preview-placeholder) {
@@ -559,6 +650,141 @@ body {
 .slide-content {
   animation: slideIn 0.3s ease-out;
 }
+
+/* Edição Inline */
+.editable-text {
+  cursor: text;
+  position: relative;
+  transition: all 0.3s ease;
+  border-radius: 8px;
+  padding: 8px;
+  margin: -8px;
+}
+
+.editable-text:hover {
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.15) 0%,
+    rgba(139, 92, 246, 0.1) 100%);
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.3),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+}
+
+.editable-text.editing {
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.25) 0%,
+    rgba(139, 92, 246, 0.2) 100%);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.5),
+              inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+  outline: none;
+}
+
+.editable-image {
+  cursor: pointer;
+  position: relative;
+  transition: all 0.3s ease;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.editable-image::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0) 0%,
+    rgba(139, 92, 246, 0) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.editable-image:hover::before {
+  opacity: 1;
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.3) 0%,
+    rgba(139, 92, 246, 0.2) 100%);
+}
+
+.editable-image::after {
+  content: '✏️ Clique para editar';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(10, 13, 20, 0.9);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+.editable-image:hover::after {
+  opacity: 1;
+}
+
+.editable-placeholder {
+  cursor: pointer;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.editable-placeholder:hover {
+  border-color: rgba(99, 102, 241, 0.6);
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.1) 0%,
+    rgba(139, 92, 246, 0.05) 100%);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Modal Glass */
+.glass-modal {
+  background: linear-gradient(135deg, 
+    rgba(10, 13, 20, 0.95) 0%,
+    rgba(20, 23, 30, 0.95) 100%);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+}
+
+.glass-input {
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.08) 0%,
+    rgba(255, 255, 255, 0.05) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  border-radius: 8px;
+  padding: 10px 14px;
+}
+
+.glass-input:focus {
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.15) 0%,
+    rgba(139, 92, 246, 0.1) 100%);
+  border-color: #6366f1;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+  color: white;
+}
+
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
 </style>
 
 <script>
@@ -579,20 +805,81 @@ async function loadSlides() {
   }
 }
 
-// Renderizar thumbnails
-function renderThumbnails() {
+// Renderizar thumbnails com preview
+async function renderThumbnails() {
   const list = document.getElementById('thumbnailsList');
-  list.innerHTML = slides.map(s => `
-    <div class="slide-thumbnail ${s.id === currentSlideId ? 'active' : ''}" 
-         data-id="${s.id}"
-         onclick="selectSlide(${s.id})">
-      <div class="slide-thumbnail-number">${s.order}</div>
-      <div class="slide-thumbnail-actions">
-        <button class="btn btn-icon btn-danger" onclick="event.stopPropagation(); deleteSlide(${s.id})" title="Deletar">×</button>
+  
+  const thumbnailsHTML = await Promise.all(slides.map(async (s) => {
+    // Buscar blocos do slide
+    const res = await fetch(`/api/slide/${s.id}/blocks`);
+    const slideBlocks = await res.json();
+    
+    // Gerar preview miniatura
+    const previewHTML = generateThumbnailPreview(s, slideBlocks);
+    
+    return `
+      <div class="slide-thumbnail ${s.id === currentSlideId ? 'active' : ''}" 
+           data-id="${s.id}"
+           onclick="selectSlide(${s.id})">
+        <div class="slide-thumbnail-number">${s.order}</div>
+        <div class="slide-thumbnail-actions">
+          <button class="btn btn-icon btn-danger" onclick="event.stopPropagation(); deleteSlide(${s.id})" title="Deletar">×</button>
+        </div>
+        <div class="thumbnail-preview">
+          ${previewHTML}
+        </div>
       </div>
-      <div class="small text-muted text-center mt-3">${s.layout}</div>
-    </div>
-  `).join('');
+    `;
+  }));
+  
+  list.innerHTML = thumbnailsHTML.join('');
+}
+
+// Gerar preview em miniatura do slide
+function generateThumbnailPreview(slide, slideBlocks) {
+  const textBlocks = slideBlocks.filter(b => b.type === 'text');
+  const imageBlocks = slideBlocks.filter(b => b.type === 'image');
+  
+  if (slide.layout === 'hero') {
+    const title = textBlocks[0]?.payload?.text || 'Título';
+    const img = imageBlocks[0]?.payload?.url;
+    return `
+      <div class="thumb-hero">
+        <div class="thumb-text">${title.substring(0, 30)}${title.length > 30 ? '...' : ''}</div>
+        ${img ? `<div class="thumb-img" style="background-image: url('${img}')"></div>` : ''}
+      </div>
+    `;
+  } else if (slide.layout === 'two_cols') {
+    const text = textBlocks[0]?.payload?.text || 'Texto';
+    const img = imageBlocks[0]?.payload?.url;
+    return `
+      <div class="thumb-two-cols">
+        <div class="thumb-text">${text.substring(0, 20)}...</div>
+        ${img ? `<div class="thumb-img" style="background-image: url('${img}')"></div>` : ''}
+      </div>
+    `;
+  } else if (slide.layout === 'quote') {
+    const quote = textBlocks[0]?.payload?.text || 'Citação';
+    return `<div class="thumb-quote">"${quote.substring(0, 40)}..."</div>`;
+  } else if (slide.layout === 'gallery') {
+    const images = imageBlocks.slice(0, 4);
+    return `
+      <div class="thumb-gallery">
+        ${images.map(b => `<div class="thumb-img-small" style="background-image: url('${b.payload?.url}')"></div>`).join('')}
+      </div>
+    `;
+  } else if (slide.layout === 'split') {
+    const title = textBlocks[0]?.payload?.text || 'Título';
+    const img = imageBlocks[0]?.payload?.url;
+    return `
+      <div class="thumb-split">
+        <div class="thumb-text">${title.substring(0, 25)}...</div>
+        ${img ? `<div class="thumb-img" style="background-image: url('${img}')"></div>` : ''}
+      </div>
+    `;
+  }
+  
+  return `<div class="thumb-empty">${slide.layout}</div>`;
 }
 
 // Selecionar slide
@@ -613,13 +900,12 @@ async function selectSlide(slideId) {
   // Habilitar botão salvar
   document.getElementById('saveBtn').disabled = false;
 
-  // Renderizar preview e propriedades
+  // Renderizar preview
   renderPreview();
-  renderProperties();
   renderThumbnails();
 }
 
-// Renderizar preview do slide (replicando templates)
+// Renderizar preview do slide com elementos editáveis
 function renderPreview() {
   const slide = slides.find(s => s.id === currentSlideId);
   if (!slide) {
@@ -634,93 +920,103 @@ function renderPreview() {
   let html = '<div class="slide-content">';
   
   if (slide.layout === 'hero') {
-    const title = textBlocks[0]?.payload?.text || 'Título do slide';
-    const img = imageBlocks[0]?.payload?.url;
+    const textBlock = textBlocks[0];
+    const title = textBlock?.payload?.text || 'Título do slide';
+    const imageBlock = imageBlocks[0];
+    const img = imageBlock?.payload?.url;
     
     html = `
       <div class="hero-slide">
         <div class="row align-items-center g-5">
           <div class="col-12 ${img ? 'col-lg-6' : 'col-lg-12 text-center'}">
-            <h1 class="display-6">${title}</h1>
+            <h1 class="display-6 editable-text" contenteditable="true" data-block-id="${textBlock?.id || ''}" data-block-type="text" data-block-index="0">${title}</h1>
           </div>
-          ${img ? `
-          <div class="col-12 col-lg-6">
-            <div class="hero-image">
-              <img src="${img}" class="img-fluid" alt="imagem" />
+          <div class="col-12 ${img ? 'col-lg-6' : 'd-none'}">
+            <div class="hero-image ${img ? 'editable-image' : 'editable-placeholder'}" data-block-id="${imageBlock?.id || ''}" data-block-type="image" data-block-index="0">
+              ${img ? `<img src="${img}" class="img-fluid" alt="imagem" />` : '<span>➕ Adicionar Imagem</span>'}
             </div>
           </div>
-          ` : ''}
         </div>
       </div>
     `;
   } else if (slide.layout === 'two_cols') {
-    const text = textBlocks[0]?.payload?.text || 'Conteúdo';
-    const img = imageBlocks[0]?.payload?.url;
+    const textBlock = textBlocks[0];
+    const text = textBlock?.payload?.text || 'Conteúdo';
+    const imageBlock = imageBlocks[0];
+    const img = imageBlock?.payload?.url;
     
     html = `
       <div class="two-cols-slide">
         <div class="row g-5 align-items-center">
           <div class="col-12 ${img ? 'col-md-6' : 'col-md-12'}">
-            <div class="two-cols-content">
+            <div class="two-cols-content editable-text" contenteditable="true" data-block-id="${textBlock?.id || ''}" data-block-type="text" data-block-index="0">
               ${text}
             </div>
           </div>
-          ${img ? `
-          <div class="col-12 col-md-6">
-            <div class="two-cols-image">
-              <img src="${img}" class="img-fluid" alt="imagem" />
+          <div class="col-12 ${img ? 'col-md-6' : 'd-none'}">
+            <div class="two-cols-image ${img ? 'editable-image' : 'editable-placeholder'}" data-block-id="${imageBlock?.id || ''}" data-block-type="image" data-block-index="0">
+              ${img ? `<img src="${img}" class="img-fluid" alt="imagem" />` : '<span>➕ Adicionar Imagem</span>'}
             </div>
           </div>
-          ` : ''}
         </div>
       </div>
     `;
   } else if (slide.layout === 'quote') {
-    const quote = textBlocks[0]?.payload?.text || 'Citação';
+    const textBlock = textBlocks[0];
+    const quote = textBlock?.payload?.text || 'Citação';
     
     html = `
       <div class="quote-slide">
         <figure class="text-center m-0">
           <blockquote class="blockquote m-0">
-            <p class="display-6">"${quote}"</p>
+            <p class="display-6 editable-text" contenteditable="true" data-block-id="${textBlock?.id || ''}" data-block-type="text" data-block-index="0">"${quote}"</p>
           </blockquote>
         </figure>
       </div>
     `;
   } else if (slide.layout === 'gallery') {
-    const images = imageBlocks.filter(b => b.payload?.url).map(b => b.payload.url);
-    const colClass = images.length > 4 ? 'col-6 col-md-4 col-lg-3' : 'col-6 col-md-6';
+    const colClass = imageBlocks.length > 4 ? 'col-6 col-md-4 col-lg-3' : 'col-6 col-md-6';
     
     html = `
       <div class="gallery-slide">
         <div class="row g-4">
-          ${images.map((url, i) => `
+          ${imageBlocks.map((block, i) => {
+            const url = block.payload?.url;
+            return `
             <div class="${colClass}">
-              <div class="gallery-item">
-                <img src="${url}" class="img-fluid" alt="imagem ${i + 1}" />
+              <div class="gallery-item ${url ? 'editable-image' : 'editable-placeholder'}" data-block-id="${block.id}" data-block-type="image" data-block-index="${i}">
+                ${url ? `<img src="${url}" class="img-fluid" alt="imagem ${i + 1}" />` : '<span>➕</span>'}
               </div>
             </div>
-          `).join('')}
+          `}).join('')}
+          <div class="${colClass}">
+            <div class="gallery-item editable-placeholder" data-block-type="image" data-block-index="new" onclick="addImageBlock()">
+              <span>➕ Adicionar</span>
+            </div>
+          </div>
         </div>
       </div>
     `;
   } else if (slide.layout === 'split') {
-    const title = textBlocks[0]?.payload?.text || 'Título do slide';
-    const text = textBlocks[1]?.payload?.text || 'Conteúdo';
-    const img = imageBlocks[0]?.payload?.url;
+    const titleBlock = textBlocks[0];
+    const textBlock = textBlocks[1];
+    const title = titleBlock?.payload?.text || 'Título do slide';
+    const text = textBlock?.payload?.text || 'Conteúdo';
+    const imageBlock = imageBlocks[0];
+    const img = imageBlock?.payload?.url;
     
     html = `
       <div class="split-slide">
         <div class="row g-5 align-items-center">
           <div class="col-12 ${img ? 'col-md-6' : 'col-md-12'}">
-            <h2 class="display-6 mb-3">${title}</h2>
-            <div>${text}</div>
+            <h2 class="display-6 mb-3 editable-text" contenteditable="true" data-block-id="${titleBlock?.id || ''}" data-block-type="text" data-block-index="0">${title}</h2>
+            <div class="editable-text" contenteditable="true" data-block-id="${textBlock?.id || ''}" data-block-type="text" data-block-index="1">${text}</div>
           </div>
-          ${img ? `
-          <div class="col-12 col-md-6">
-            <img src="${img}" class="img-fluid" alt="imagem" />
+          <div class="col-12 ${img ? 'col-md-6' : 'd-none'}">
+            <div class="${img ? 'editable-image' : 'editable-placeholder'}" data-block-id="${imageBlock?.id || ''}" data-block-type="image" data-block-index="0">
+              ${img ? `<img src="${img}" class="img-fluid" alt="imagem" />` : '<span>➕ Adicionar Imagem</span>'}
+            </div>
           </div>
-          ` : ''}
         </div>
       </div>
     `;
@@ -728,94 +1024,110 @@ function renderPreview() {
   
   html += '</div>';
   preview.innerHTML = html;
+  
+  // Adicionar event listeners para edição inline
+  attachEditableListeners();
 }
 
-// Renderizar painel de propriedades
-function renderProperties() {
-  const slide = slides.find(s => s.id === currentSlideId);
-  if (!slide) {
-    document.getElementById('propertiesArea').innerHTML = '<p class="text-white-50 small">Selecione um slide</p>';
-    return;
-  }
+// Event listeners para edição inline
+let currentEditingElement = null;
+let currentImageBlockId = null;
 
-  const props = document.getElementById('propertiesArea');
-  let html = '';
-
-  // Campos baseados no layout
-  if (slide.layout === 'hero') {
-    const textBlock = blocks.find(b => b.type === 'text') || {};
-    const imageBlock = blocks.find(b => b.type === 'image') || {};
-    
-    html += `
-      <div class="property-group">
-        <label>Título</label>
-        <textarea class="form-control" id="prop_text_0" onchange="updateBlock('text', 0, this.value)">${textBlock.payload?.text || ''}</textarea>
-      </div>
-      <div class="property-group">
-        <label>URL da Imagem (opcional)</label>
-        <input type="text" class="form-control" id="prop_image_0" value="${imageBlock.payload?.url || ''}" onchange="updateBlock('image', 0, this.value)">
-        <button class="btn btn-sm btn-secondary mt-2" onclick="uploadImage()">Upload</button>
-      </div>
-    `;
-  } else if (slide.layout === 'two_cols') {
-    const textBlock = blocks.find(b => b.type === 'text') || {};
-    const imageBlock = blocks.find(b => b.type === 'image') || {};
-    
-    html += `
-      <div class="property-group">
-        <label>Texto</label>
-        <textarea class="form-control" id="prop_text_0" onchange="updateBlock('text', 0, this.value)">${textBlock.payload?.text || ''}</textarea>
-      </div>
-      <div class="property-group">
-        <label>URL da Imagem (opcional)</label>
-        <input type="text" class="form-control" id="prop_image_0" value="${imageBlock.payload?.url || ''}" onchange="updateBlock('image', 0, this.value)">
-        <button class="btn btn-sm btn-secondary mt-2" onclick="uploadImage()">Upload</button>
-      </div>
-    `;
-  } else if (slide.layout === 'quote') {
-    const textBlock = blocks.find(b => b.type === 'text') || {};
-    
-    html += `
-      <div class="property-group">
-        <label>Citação</label>
-        <textarea class="form-control" id="prop_text_0" onchange="updateBlock('text', 0, this.value)">${textBlock.payload?.text || ''}</textarea>
-      </div>
-    `;
-  } else if (slide.layout === 'gallery') {
-    html += '<div class="property-group"><label>Imagens</label>';
-    blocks.filter(b => b.type === 'image').forEach((b, i) => {
-      html += `
-        <div class="input-group mb-2">
-          <input type="text" class="form-control form-control-sm" value="${b.payload?.url || ''}" onchange="updateBlock('image', ${i}, this.value)">
-          <button class="btn btn-sm btn-danger" onclick="removeBlock(${b.id})">×</button>
-        </div>
-      `;
+function attachEditableListeners() {
+  // Textos editáveis
+  document.querySelectorAll('.editable-text').forEach(el => {
+    el.addEventListener('blur', async function() {
+      const blockId = this.dataset.blockId;
+      const text = this.innerText.trim();
+      
+      if (blockId) {
+        await updateBlockText(blockId, text);
+      } else {
+        // Criar novo bloco
+        const index = parseInt(this.dataset.blockIndex);
+        await updateBlock('text', index, text);
+      }
+      
+      this.classList.remove('editing');
     });
-    html += '<button class="btn btn-sm btn-primary mt-2" onclick="addImageBlock()">+ Imagem</button></div>';
-  } else if (slide.layout === 'split') {
-    const titleBlock = blocks.filter(b => b.type === 'text')[0] || {};
-    const textBlock = blocks.filter(b => b.type === 'text')[1] || {};
-    const imageBlock = blocks.find(b => b.type === 'image') || {};
     
-    html += `
-      <div class="property-group">
-        <label>Título</label>
-        <textarea class="form-control" id="prop_text_0" onchange="updateBlock('text', 0, this.value)">${titleBlock.payload?.text || ''}</textarea>
-      </div>
-      <div class="property-group">
-        <label>Texto</label>
-        <textarea class="form-control" id="prop_text_1" onchange="updateBlock('text', 1, this.value)">${textBlock.payload?.text || ''}</textarea>
-      </div>
-      <div class="property-group">
-        <label>URL da Imagem (opcional)</label>
-        <input type="text" class="form-control" id="prop_image_0" value="${imageBlock.payload?.url || ''}" onchange="updateBlock('image', 0, this.value)">
-        <button class="btn btn-sm btn-secondary mt-2" onclick="uploadImage()">Upload</button>
-      </div>
-    `;
-  }
-
-  props.innerHTML = html;
+    el.addEventListener('focus', function() {
+      this.classList.add('editing');
+    });
+    
+    el.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        this.blur();
+      }
+    });
+  });
+  
+  // Imagens editáveis
+  document.querySelectorAll('.editable-image, .editable-placeholder').forEach(el => {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      currentImageBlockId = this.dataset.blockId;
+      const blockIndex = this.dataset.blockIndex;
+      
+      // Abrir modal
+      const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+      const input = document.getElementById('imageUrlInput');
+      
+      // Preencher com URL atual se existir
+      const currentBlock = blocks.find(b => b.id == currentImageBlockId);
+      input.value = currentBlock?.payload?.url || '';
+      
+      modal.show();
+    });
+  });
 }
+
+// Atualizar texto do bloco
+async function updateBlockText(blockId, text) {
+  const block = blocks.find(b => b.id == blockId);
+  if (!block) return;
+  
+  block.payload = { text };
+  
+  await fetch(`/api/block/${blockId}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken
+    },
+    body: JSON.stringify({ payload: block.payload })
+  });
+}
+
+// Salvar imagem do modal
+document.getElementById('saveImageBtn')?.addEventListener('click', async () => {
+  const url = document.getElementById('imageUrlInput').value.trim();
+  
+  if (!url) return;
+  
+  if (currentImageBlockId) {
+    // Atualizar bloco existente
+    const block = blocks.find(b => b.id == currentImageBlockId);
+    if (block) {
+      block.payload = { url };
+      await fetch(`/api/block/${currentImageBlockId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': csrfToken
+        },
+        body: JSON.stringify({ payload: { url } })
+      });
+    }
+  } else {
+    // Criar novo bloco
+    await updateBlock('image', 0, url);
+  }
+  
+  // Fechar modal e atualizar preview
+  bootstrap.Modal.getInstance(document.getElementById('imageModal')).hide();
+  await selectSlide(currentSlideId);
+});
 
 // Atualizar bloco
 async function updateBlock(type, index, value) {
@@ -869,7 +1181,6 @@ document.getElementById('layoutSelect').addEventListener('change', async (e) => 
   });
   
   renderPreview();
-  renderProperties();
   renderThumbnails();
 });
 
@@ -896,7 +1207,15 @@ document.getElementById('addSlideBtn').addEventListener('click', async () => {
     }
   });
   const newSlide = await res.json();
-  slides.push(newSlide);
+  
+  // Inserir após o slide atual
+  if (currentSlideId) {
+    const currentIndex = slides.findIndex(s => s.id === currentSlideId);
+    slides.splice(currentIndex + 1, 0, newSlide);
+  } else {
+    slides.push(newSlide);
+  }
+  
   renderThumbnails();
   selectSlide(newSlide.id);
 });
@@ -905,28 +1224,58 @@ document.getElementById('addSlideBtn').addEventListener('click', async () => {
 async function deleteSlide(slideId) {
   if (!confirm('Remover este slide?')) return;
   
-  await fetch(`/api/slide/${slideId}`, {
+  const res = await fetch(`/api/slide/${slideId}`, {
     method: 'DELETE',
     headers: { 'X-CSRFToken': csrfToken }
   });
   
+  if (!res.ok) {
+    alert('Erro ao deletar slide');
+    return;
+  }
+  
   slides = slides.filter(s => s.id !== slideId);
   
   if (currentSlideId === slideId) {
-    currentSlideId = null;
-    document.getElementById('slidePreview').innerHTML = '<div class="alert alert-info m-4">Selecione um slide para editar</div>';
-    document.getElementById('propertiesArea').innerHTML = '<p class="text-muted small">Selecione um slide</p>';
-    document.getElementById('layoutSelect').disabled = true;
-    document.getElementById('saveBtn').disabled = true;
+    if (slides.length > 0) {
+      selectSlide(slides[0].id);
+    } else {
+      currentSlideId = null;
+      const preview = document.getElementById('slidePreview');
+      if (preview) preview.innerHTML = '<div class="preview-placeholder">Nenhum slide</div>';
+      const layoutSelect = document.getElementById('layoutSelect');
+      if (layoutSelect) layoutSelect.disabled = true;
+      const saveBtn = document.getElementById('saveBtn');
+      if (saveBtn) saveBtn.disabled = true;
+    }
   }
   
   renderThumbnails();
 }
 
-// Upload de imagem
-function uploadImage() {
-  alert('Função de upload em desenvolvimento. Por enquanto, cole a URL da imagem.');
-}
+// Upload de arquivo de imagem
+document.getElementById('imageFileInput')?.addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const formData = new FormData();
+  formData.append('file', file);
+  
+  try {
+    const res = await fetch(`/slide/${currentSlideId}/upload`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken },
+      body: formData
+    });
+    
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById('imageUrlInput').value = data.url;
+    }
+  } catch (err) {
+    alert('Erro ao fazer upload: ' + err.message);
+  }
+});
 
 // Adicionar bloco de imagem
 async function addImageBlock() {
@@ -948,7 +1297,6 @@ async function addImageBlock() {
   const newBlock = await res.json();
   blocks.push(newBlock);
   renderPreview();
-  renderProperties();
 }
 
 // Remover bloco
@@ -960,13 +1308,15 @@ async function removeBlock(blockId) {
   
   blocks = blocks.filter(b => b.id !== blockId);
   renderPreview();
-  renderProperties();
 }
 
 // Navegação por setas
 document.addEventListener('keydown', (e) => {
-  // Ignora se estiver digitando em input/textarea
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+  // Ignora se estiver digitando em input/textarea ou editando texto
+  if (e.target.tagName === 'INPUT' || 
+      e.target.tagName === 'TEXTAREA' || 
+      e.target.tagName === 'SELECT' ||
+      e.target.isContentEditable) {
     return;
   }
 

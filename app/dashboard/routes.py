@@ -291,14 +291,12 @@ def upload_image(slide_id: int):
     )
     file = request.files.get("file")
     if not file:
-        flash("Arquivo não enviado.", "danger")
-        return redirect(url_for("dashboard.blocks_manage", slide_id=slide.id))
+        return jsonify({"error": "Arquivo não enviado"}), 400
     try:
         url, _ = save_image(file, upload_root=current_app.config["UPLOAD_FOLDER"])
-        return redirect(url_for("dashboard.blocks_manage", slide_id=slide.id, uploaded=url))
-    except Exception as e:  # pragma: no cover
-        flash(str(e), "danger")
-        return redirect(url_for("dashboard.blocks_manage", slide_id=slide.id))
+        return jsonify({"url": url, "success": True})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
 
 @bp.route("/lesson/<int:lesson_id>/editor")
@@ -381,6 +379,8 @@ def api_delete_slide(slide_id: int):
         .filter(Slide.id == slide_id, Lesson.user_id == current_user.id)
         .first_or_404()
     )
+    # Deletar blocos primeiro
+    SlideBlock.query.filter_by(slide_id=slide.id).delete()
     db.session.delete(slide)
     db.session.commit()
     return jsonify({"success": True})
