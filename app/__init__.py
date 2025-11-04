@@ -89,8 +89,15 @@ def create_app() -> Flask:
     # CLI simples para criar DB
     @app.cli.command("init-db")
     def init_db_command():  # pragma: no cover
-        from . import models  # noqa: F401 - garante mapeamentos
+        from .models import User
         db.create_all()
+        # Create a test user
+        if not User.query.filter_by(email="testuser@example.com").first():
+            user = User(email="testuser@example.com")
+            user.set_password("password")
+            db.session.add(user)
+            db.session.commit()
+            print("Usuário de teste criado.")
         print("Banco inicializado em instance/app.db")
 
     return app

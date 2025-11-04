@@ -50,6 +50,7 @@ migrations/
 .coverage
 htmlcov/
 .tox/
+tests/screenshots/
 
 # OS
 .DS_Store

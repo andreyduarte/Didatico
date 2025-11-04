@@ -89,7 +89,10 @@ def lesson_publish(lesson_id: int):
         lesson.published = False
     else:
         lesson.published = not lesson.published
+    import time
+    db.session.flush()
     db.session.commit()
+    time.sleep(0.1) # Aguarda a consistência do DB
     state = "publicada" if lesson.published else "como rascunho"
     flash(f"Aula marcada {state}.", "success")
     return redirect(url_for("dashboard.index"))
