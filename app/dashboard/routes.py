@@ -351,7 +351,14 @@ def api_get_slides(lesson_id: int):
         "id": s.id,
         "order": s.order,
         "layout": s.layout,
-        "content_html": s.content_html or ""
+        "background": s.background,
+        "content_html": s.content_html or "",
+        "blocks": [{
+            "id": b.id,
+            "type": b.type,
+            "payload": b.payload or {},
+            "order": b.order
+        } for b in s.blocks]
     } for s in slides])
 
 
@@ -376,6 +383,8 @@ def api_update_slide(slide_id: int):
         slide.content_html = clean_html
     if "layout" in data:
         slide.layout = data["layout"]
+    if "background" in data:
+        slide.background = data["background"]
     db.session.commit()
     return jsonify({"success": True})
 
@@ -472,6 +481,25 @@ def api_get_blocks(slide_id: int):
     } for b in blocks])
 
 
+@bp.route("/api/slide/<int:slide_id>/preview")
+@login_required
+def api_slide_preview(slide_id: int):
+    from ..services import layout_engine
+    from markupsafe import Markup
+    
+    slide = (
+        db.session.query(Slide)
+        .join(Lesson, Slide.lesson_id == Lesson.id)
+        .filter(Slide.id == slide_id, Lesson.user_id == current_user.id)
+        .first_or_404()
+    )
+    
+    theme_name = slide.lesson.theme
+    tpl, ctx = layout_engine.render_context(slide, theme_name)
+    html = render_template(tpl, **ctx)
+    return html
+
+
 @bp.route("/api/slide/<int:slide_id>/block", methods=["POST"])
 @login_required
 def api_create_block(slide_id: int):
@@ -532,7 +560,3 @@ def api_delete_block(block_id: int):
     db.session.delete(block)
     db.session.commit()
     return jsonify({"success": True})
-
-
-
-

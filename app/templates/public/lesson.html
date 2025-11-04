@@ -1,4 +1,5 @@
 {% extends 'base_public.html' %}
+{% set lesson = lesson %}
 {% block title %}{{ lesson.title }}{% endblock %}
 {% block content %}
 {% for slide in lesson.slides %}

@@ -1,0 +1,12 @@
+<div class="slide-conteudo">
+  <div class="conteudo-main">
+    {% if image %}
+    <img src="{{ image }}" alt="imagem" class="conteudo-image">
+    {% else %}
+    <div class="conteudo-text">{{ text | safe }}</div>
+    {% endif %}
+  </div>
+  <div class="conteudo-footer" style="background-color: {{ bg_color }};">
+    {{ footer }}
+  </div>
+</div>
