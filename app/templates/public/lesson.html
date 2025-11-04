@@ -2,8 +2,9 @@
 {% set lesson = lesson %}
 {% block title %}{{ lesson.title }}{% endblock %}
 {% block content %}
+{% from "_helpers.html" import slide_class %}
 {% for slide in lesson.slides %}
-  <section id="s{{ loop.index }}" class="slide">
+  <section id="s{{ loop.index }}" class="{{ slide_class(slide) }}">
     {% if slide.content_html %}
       <div class="slide-content">
         <div class="wysiwyg-content">

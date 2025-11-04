@@ -494,10 +494,7 @@ def api_slide_preview(slide_id: int):
         .first_or_404()
     )
     
-    theme_name = slide.lesson.theme
-    tpl, ctx = layout_engine.render_context(slide, theme_name)
-    html = render_template(tpl, **ctx)
-    return html
+    return render_template("dashboard/slide_preview.html", slide=slide)
 
 
 @bp.route("/api/slide/<int:slide_id>/block", methods=["POST"])

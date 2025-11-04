@@ -1,0 +1,7 @@
+{% macro slide_class(slide) %}
+  {% set classes = ["slide"] %}
+  {% if slide.layout in ["titulo", "subtitulo", "hero"] %}
+    {% do classes.append("slide-fullscreen") %}
+  {% endif %}
+  {{ classes | join(" ") }}
+{% endmacro %}
