@@ -37,8 +37,15 @@
     </div>
   </div>
 
-  <!-- Painel Esquerdo Flutuante: Thumbnails -->
-  <div class="floating-panel floating-left">
+  <!-- Botão Toggle Drawer -->
+  <button class="drawer-toggle" id="drawerToggle" title="Slides">
+    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16">
+      <path d="M0 2a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V2zm0 6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V8zm0 6a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1v-2z"/>
+    </svg>
+  </button>
+
+  <!-- Drawer de Thumbnails -->
+  <div class="floating-panel" id="thumbnailsDrawer">
     <button id="addSlideBtn" class="btn btn-sm btn-primary w-100 mb-2">+ Novo Slide</button>
     <div id="thumbnailsList" class="thumbnails-scroll">
       <!-- Thumbnails serão carregados via JS -->

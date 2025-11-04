@@ -1,13 +1,13 @@
 <div class="slide-sumario">
   <div class="sumario-sidebar" style="background-color: {{ bg_color }};">
-    <h2 class="sumario-title">{{ title }}</h2>
-    <p class="sumario-paragraph">{{ paragraph }}</p>
+    <h2 class="sumario-title editable-text" contenteditable="true" data-block-id="{{ title_block_id }}" data-block-index="0">{{ title }}</h2>
+    <p class="sumario-paragraph editable-text" contenteditable="true" data-block-id="{{ paragraph_block_id }}" data-block-index="1">{{ paragraph }}</p>
   </div>
   <div class="sumario-main">
     {% if image %}
-    <img src="{{ image }}" alt="imagem" class="sumario-image">
+    <img src="{{ image }}" alt="imagem" class="sumario-image editable-image" data-block-id="{{ image_block_id }}">
     {% else %}
-    <div class="sumario-content">{{ content | safe }}</div>
+    <div class="sumario-content editable-text" contenteditable="true" data-block-id="{{ content_block_id }}" data-block-index="2">{{ content }}</div>
     {% endif %}
   </div>
 </div>

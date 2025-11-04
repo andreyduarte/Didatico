@@ -25,6 +25,7 @@ body {
   left: 0;
   width: 100%;
   height: 100%;
+  min-height: 100vh;
   background: #0a0d14;
   color: #ffffff;
   display: flex;
@@ -70,47 +71,58 @@ body {
               inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
 }
 
-/* Painéis Flutuantes - Liquid Glass */
+/* Drawer de Thumbnails */
 .floating-panel {
   position: fixed;
-  top: 70px;
-  bottom: 20px;
-  width: 220px;
+  top: 0;
+  left: -280px;
+  bottom: 0;
+  width: 280px;
   background: linear-gradient(135deg, 
-    rgba(99, 102, 241, 0.12) 0%,
-    rgba(139, 92, 246, 0.08) 50%,
-    rgba(59, 130, 246, 0.12) 100%);
+    rgba(10, 13, 20, 0.98) 0%,
+    rgba(20, 23, 30, 0.98) 100%);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 16px;
-  padding: 16px;
-  z-index: 900;
-  transition: all 0.3s ease;
-  opacity: 0.5;
+  border-right: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 70px 16px 16px;
+  z-index: 950;
+  transition: left 0.3s ease;
   overflow-y: auto;
-  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.1),
-              inset 0 1px 0 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 4px 0 32px 0 rgba(0, 0, 0, 0.5);
 }
 
-.floating-panel:hover {
-  opacity: 1;
-  background: linear-gradient(135deg, 
-    rgba(99, 102, 241, 0.22) 0%,
-    rgba(139, 92, 246, 0.18) 50%,
-    rgba(59, 130, 246, 0.22) 100%);
-  box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.2),
-              inset 0 1px 0 0 rgba(255, 255, 255, 0.15);
+.floating-panel.open {
+  left: 0;
 }
 
-.floating-left {
+.drawer-toggle {
+  position: fixed;
+  top: 70px;
   left: 20px;
+  z-index: 1001;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
+  transition: all 0.3s ease;
+}
+
+.drawer-toggle:hover {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  transform: translateY(-2px);
 }
 
 
 
 .thumbnails-scroll {
-  max-height: calc(100vh - 180px);
   overflow-y: auto;
 }
 .slide-thumbnail {

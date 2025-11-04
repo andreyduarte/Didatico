@@ -17,6 +17,8 @@ export function initializeUI(layouts) {
   elements.imageUrlInput = document.getElementById('imageUrlInput');
   elements.imageFileInput = document.getElementById('imageFileInput');
   elements.saveImageBtn = document.getElementById('saveImageBtn');
+  elements.drawerToggle = document.getElementById('drawerToggle');
+  elements.thumbnailsDrawer = document.getElementById('thumbnailsDrawer');
 
   elements.layoutSelect.innerHTML = layouts.map(layout => 
     `<option value="${layout.value}">${layout.label}</option>`
@@ -71,6 +73,10 @@ function attachEventListeners() {
     } catch (err) {
       feedback.showError(err.message);
     }
+  });
+
+  elements.drawerToggle.addEventListener('click', () => {
+    elements.thumbnailsDrawer.classList.toggle('open');
   });
 
   document.addEventListener('keydown', handleKeyboardNavigation);
@@ -167,7 +173,7 @@ function attachEditableListeners() {
       const blockId = this.dataset.blockId;
       const text = this.innerText.trim();
       
-      if (blockId) {
+      if (blockId && blockId !== 'None') {
         await updateBlock(blockId, { text });
       } else {
         const index = parseInt(this.dataset.blockIndex);
@@ -190,7 +196,8 @@ function attachEditableListeners() {
   document.querySelectorAll('.editable-image, .editable-placeholder').forEach(el => {
     el.addEventListener('click', function(e) {
       e.stopPropagation();
-      currentImageBlockId = this.dataset.blockId;
+      const blockId = this.dataset.blockId;
+      currentImageBlockId = (blockId && blockId !== 'None') ? blockId : null;
       elements.imageModal.dataset.blockId = currentImageBlockId;
       
       const currentBlock = getBlockById(currentImageBlockId);
