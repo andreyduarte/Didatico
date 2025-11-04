@@ -1,0 +1,14 @@
+<div class="academic-sidebar-summary-slide">
+  <div class="academic-sidebar">
+    <h2 class="academic-sidebar-title">{{ title }}</h2>
+    <div class="academic-sidebar-text">{{ text | safe }}</div>
+  </div>
+  <div class="academic-main-content">
+    {% if quote %}
+      <p class="academic-main-quote">{{ quote }}</p>
+    {% endif %}
+    {% for url in images %}
+      <img src="{{ url }}" class="academic-main-image" />
+    {% endfor %}
+  </div>
+</div>

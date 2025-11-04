@@ -21,27 +21,37 @@ def index():
 @bp.route("/lesson/new", methods=["GET", "POST"])
 @login_required
 def lesson_new():
-    form = LessonForm()
-    if form.validate_on_submit():
+    if request.method == "POST":
+        title = request.form.get("title", "").strip()
+        slug = request.form.get("slug", "").strip()
+        description = request.form.get("description", "").strip()
+        theme = request.form.get("theme", "default")
+        
+        # Validação básica
+        if not title or not slug:
+            flash("Título e slug são obrigatórios.", "danger")
+            return redirect(url_for("dashboard.index"))
+        
         # Checa slug único por usuário
-        exists = (
-            Lesson.query.filter_by(user_id=current_user.id, slug=form.slug.data).first()
-            is not None
-        )
+        exists = Lesson.query.filter_by(user_id=current_user.id, slug=slug).first()
         if exists:
             flash("Slug já usado nesta conta.", "danger")
-        else:
-            lesson = Lesson(
-                user_id=current_user.id,
-                title=form.title.data.strip(),
-                slug=form.slug.data.strip(),
-                description=form.description.data or "",
-            )
-            db.session.add(lesson)
-            db.session.commit()
-            flash("Aula criada.", "success")
             return redirect(url_for("dashboard.index"))
-    return render_template("dashboard/lesson_form.html", form=form, is_edit=False)
+        
+        lesson = Lesson(
+            user_id=current_user.id,
+            title=title,
+            slug=slug,
+            description=description,
+            theme=theme
+        )
+        db.session.add(lesson)
+        db.session.commit()
+        flash("Apresentação criada com sucesso!", "success")
+        return redirect(url_for("dashboard.lesson_editor", lesson_id=lesson.id))
+    
+    # GET - redireciona para index (modal está lá)
+    return redirect(url_for("dashboard.index"))
 
 
 @bp.route("/lesson/<int:lesson_id>/edit", methods=["GET", "POST"])
@@ -96,10 +106,12 @@ def slides_manage(lesson_id: int):
 @bp.route("/lesson/<int:lesson_id>/slide/new", methods=["POST"])
 @login_required
 def slide_new(lesson_id: int):
+    from ..services.theme_config import get_theme_layouts
     lesson = Lesson.query.filter_by(id=lesson_id, user_id=current_user.id).first_or_404()
     max_order = db.session.query(db.func.max(Slide.order)).filter_by(lesson_id=lesson.id).scalar()
     next_order = (max_order or 0) + 1
-    slide = Slide(lesson_id=lesson.id, order=next_order, layout="hero")
+    default_layout = get_theme_layouts(lesson.theme)[0]["value"]
+    slide = Slide(lesson_id=lesson.id, order=next_order, layout=default_layout)
     db.session.add(slide)
     db.session.commit()
     flash("Slide criado.", "success")
@@ -302,8 +314,18 @@ def upload_image(slide_id: int):
 @bp.route("/lesson/<int:lesson_id>/editor")
 @login_required
 def lesson_editor(lesson_id: int):
+    from ..services.theme_config import get_theme_layouts
     lesson = Lesson.query.filter_by(id=lesson_id, user_id=current_user.id).first_or_404()
-    return render_template("dashboard/editor.html", lesson=lesson)
+    layouts = get_theme_layouts(lesson.theme)
+    return render_template("dashboard/editor.html", lesson=lesson, layouts=layouts)
+
+
+@bp.route("/api/lesson/<int:lesson_id>/theme-layouts")
+@login_required
+def api_get_theme_layouts(lesson_id: int):
+    from ..services.theme_config import get_theme_layouts
+    lesson = Lesson.query.filter_by(id=lesson_id, user_id=current_user.id).first_or_404()
+    return jsonify(get_theme_layouts(lesson.theme))
 
 
 # API Endpoints
@@ -361,11 +383,26 @@ def api_update_slide(slide_id: int):
 @bp.route("/api/lesson/<int:lesson_id>/slide", methods=["POST"])
 @login_required
 def api_create_slide(lesson_id: int):
+    from ..services.theme_config import get_theme_layouts, get_layout_default_blocks
     lesson = Lesson.query.filter_by(id=lesson_id, user_id=current_user.id).first_or_404()
     max_order = db.session.query(db.func.max(Slide.order)).filter_by(lesson_id=lesson.id).scalar()
     next_order = (max_order or 0) + 1
-    slide = Slide(lesson_id=lesson.id, order=next_order, layout="hero", content_html="")
+    default_layout = get_theme_layouts(lesson.theme)[0]["value"]
+    slide = Slide(lesson_id=lesson.id, order=next_order, layout=default_layout, content_html="")
     db.session.add(slide)
+    db.session.flush()
+    
+    # Criar blocos padrão para o layout
+    default_blocks = get_layout_default_blocks(default_layout)
+    for i, block_data in enumerate(default_blocks):
+        block = SlideBlock(
+            slide_id=slide.id,
+            type=block_data["type"],
+            payload=block_data["payload"],
+            order=i
+        )
+        db.session.add(block)
+    
     db.session.commit()
     return jsonify({"id": slide.id, "order": slide.order, "layout": slide.layout, "content_html": ""})
 

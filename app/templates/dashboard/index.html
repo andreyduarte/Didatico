@@ -3,8 +3,49 @@
 {% block content %}
 <div class="d-flex align-items-center justify-content-between mb-3">
   <h1 class="h4 m-0">Minhas aulas</h1>
-  <a class="btn btn-sm btn-primary" href="{{ url_for('dashboard.lesson_new') }}">Nova aula</a>
-  
+  <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#newLessonModal">Nova aula</button>
+</div>
+
+<!-- Modal de Nova Apresentação -->
+<div class="modal fade" id="newLessonModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Nova Apresentação</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form method="post" action="{{ url_for('dashboard.lesson_new') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label">Título</label>
+            <input type="text" class="form-control" name="title" required placeholder="Ex: Introdução à Física Quântica">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Slug (URL)</label>
+            <input type="text" class="form-control" name="slug" required pattern="[a-z0-9-]+" placeholder="Ex: intro-fisica-quantica">
+            <div class="form-text">Apenas letras minúsculas, números e hífens</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Descrição</label>
+            <textarea class="form-control" name="description" rows="3" placeholder="Breve descrição da apresentação"></textarea>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Tema Visual</label>
+            <select class="form-select" name="theme">
+              <option value="default">Default - Escuro Moderno</option>
+              <option value="behaviorist">Behaviorist - Educacional</option>
+              <option value="academic">Academic - Acadêmico</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Criar Apresentação</button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 {% if lessons %}
@@ -13,7 +54,7 @@
       <div class="list-group-item d-flex align-items-center justify-content-between">
         <div>
           <div class="fw-semibold">{{ lesson.title }}</div>
-          <div class="small text-muted">/{{ lesson.slug }} {% if lesson.published %}• publicado{% else %}• rascunho{% endif %}</div>
+          <div class="small text-muted">/{{ lesson.slug }} • <span class="badge bg-secondary">{{ lesson.theme }}</span> {% if lesson.published %}• publicado{% else %}• rascunho{% endif %}</div>
         </div>
         <div class="btn-group">
           <a href="/c/{{ lesson.slug }}" class="btn btn-sm btn-secondary" target="_blank">Ver público</a>

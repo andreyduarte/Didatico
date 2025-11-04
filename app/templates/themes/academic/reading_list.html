@@ -1,0 +1,13 @@
+<div class="academic-reading-list-slide">
+  <div class="academic-reading-list-header">
+    <h2 class="academic-reading-list-title">{{ title }}</h2>
+  </div>
+  <div class="academic-reading-list-content">
+    {% for url in images %}
+      <img src="{{ url }}" class="academic-reading-list-image" />
+    {% endfor %}
+    {% if text %}
+      <div class="academic-reading-list-text">{{ text | safe }}</div>
+    {% endif %}
+  </div>
+</div>

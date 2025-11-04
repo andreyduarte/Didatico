@@ -21,13 +21,12 @@
         <span class="text-white fw-semibold">{{ lesson.title }}</span>
       </div>
       <div class="d-flex align-items-center gap-2">
+        <span class="badge bg-secondary me-2">Tema: {{ lesson.theme }}</span>
         <label class="small mb-0 me-2 text-white">Layout:</label>
-        <select id="layoutSelect" class="form-select form-select-sm" style="width: 180px;" disabled>
-          <option value="hero">Hero</option>
-          <option value="two_cols">Duas Colunas</option>
-          <option value="split">Split (Título + Texto)</option>
-          <option value="gallery">Galeria</option>
-          <option value="quote">Citação</option>
+        <select id="layoutSelect" class="form-select form-select-sm" style="width: 200px;" disabled>
+          {% for layout in layouts %}
+          <option value="{{ layout.value }}">{{ layout.label }}</option>
+          {% endfor %}
         </select>
         <button id="saveBtn" class="btn btn-sm btn-success" disabled>Salvar</button>
         <a href="{{ url_for('public.view_lesson', slug=lesson.slug) }}" class="btn btn-sm btn-light" target="_blank">Apresentar</a>
@@ -789,6 +788,7 @@ body {
 
 <script>
 const lessonId = {{ lesson.id }};
+const lessonTheme = '{{ lesson.theme }}';
 let currentSlideId = null;
 let slides = [];
 let blocks = [];
@@ -1018,6 +1018,89 @@ function renderPreview() {
             </div>
           </div>
         </div>
+      </div>
+    `;
+  } else if (slide.layout === 'cover') {
+    const titleBlock = textBlocks[0];
+    const subtitleBlock = textBlocks[1];
+    const title = titleBlock?.payload?.text || 'Título';
+    const subtitle = subtitleBlock?.payload?.text || 'Subtítulo';
+    html = `
+      <div class="text-center">
+        <h1 class="display-3 mb-4 editable-text" contenteditable="true" data-block-id="${titleBlock?.id || ''}" data-block-type="text" data-block-index="0">${title}</h1>
+        <p class="lead editable-text" contenteditable="true" data-block-id="${subtitleBlock?.id || ''}" data-block-type="text" data-block-index="1">${subtitle}</p>
+      </div>
+    `;
+  } else if (slide.layout === 'objective') {
+    const titleBlock = textBlocks[0];
+    const descBlock = textBlocks[1];
+    const title = titleBlock?.payload?.text || 'Objetivo';
+    const desc = descBlock?.payload?.text || 'Descrição';
+    html = `
+      <div>
+        <h2 class="display-6 mb-4 editable-text" contenteditable="true" data-block-id="${titleBlock?.id || ''}" data-block-type="text" data-block-index="0">${title}</h2>
+        <div class="lead editable-text" contenteditable="true" data-block-id="${descBlock?.id || ''}" data-block-type="text" data-block-index="1">${desc}</div>
+      </div>
+    `;
+  } else if (slide.layout === 'statement') {
+    const textBlock = textBlocks[0];
+    const text = textBlock?.payload?.text || 'Declaração';
+    html = `
+      <div class="text-center">
+        <p class="display-6 editable-text" contenteditable="true" data-block-id="${textBlock?.id || ''}" data-block-type="text" data-block-index="0">${text}</p>
+      </div>
+    `;
+  } else if (slide.layout === 'quote_block') {
+    const quoteBlock = textBlocks[0];
+    const authorBlock = textBlocks[1];
+    const quote = quoteBlock?.payload?.text || 'Citação';
+    const author = authorBlock?.payload?.text || '';
+    html = `
+      <div class="text-center">
+        <blockquote class="blockquote">
+          <p class="display-6 mb-4 editable-text" contenteditable="true" data-block-id="${quoteBlock?.id || ''}" data-block-type="text" data-block-index="0">"${quote}"</p>
+          ${author ? `<footer class="blockquote-footer editable-text" contenteditable="true" data-block-id="${authorBlock?.id || ''}" data-block-type="text" data-block-index="1">${author}</footer>` : `<footer class="blockquote-footer editable-text" contenteditable="true" data-block-id="${authorBlock?.id || ''}" data-block-type="text" data-block-index="1">Autor</footer>`}
+        </blockquote>
+      </div>
+    `;
+  } else if (slide.layout === 'section_break') {
+    const textBlock = textBlocks[0];
+    const text = textBlock?.payload?.text || 'Seção';
+    html = `
+      <div class="text-center">
+        <h2 class="display-4 editable-text" contenteditable="true" data-block-id="${textBlock?.id || ''}" data-block-type="text" data-block-index="0">${text}</h2>
+        <hr class="my-4" style="width: 200px; margin: 2rem auto; border-top: 3px solid rgba(255,255,255,0.3);">
+      </div>
+    `;
+  } else if (slide.layout === 'sidebar_summary') {
+    const titleBlock = textBlocks[0];
+    const contentBlock = textBlocks[1];
+    const summaryBlock = textBlocks[2];
+    const title = titleBlock?.payload?.text || 'Título';
+    const content = contentBlock?.payload?.text || 'Conteúdo';
+    const summary = summaryBlock?.payload?.text || 'Resumo';
+    html = `
+      <div class="row g-4">
+        <div class="col-md-8">
+          <h2 class="display-6 mb-3 editable-text" contenteditable="true" data-block-id="${titleBlock?.id || ''}" data-block-type="text" data-block-index="0">${title}</h2>
+          <div class="editable-text" contenteditable="true" data-block-id="${contentBlock?.id || ''}" data-block-type="text" data-block-index="1">${content}</div>
+        </div>
+        <div class="col-md-4">
+          <div class="p-3" style="background: rgba(255,255,255,0.05); border-radius: 8px;">
+            <div class="editable-text" contenteditable="true" data-block-id="${summaryBlock?.id || ''}" data-block-type="text" data-block-index="2">${summary}</div>
+          </div>
+        </div>
+      </div>
+    `;
+  } else if (slide.layout === 'reading_list') {
+    const titleBlock = textBlocks[0];
+    const listBlock = textBlocks[1];
+    const title = titleBlock?.payload?.text || 'Leituras';
+    const list = listBlock?.payload?.text || 'Lista';
+    html = `
+      <div>
+        <h2 class="display-6 mb-4 editable-text" contenteditable="true" data-block-id="${titleBlock?.id || ''}" data-block-type="text" data-block-index="0">${title}</h2>
+        <div class="editable-text" contenteditable="true" data-block-id="${listBlock?.id || ''}" data-block-type="text" data-block-index="1">${list}</div>
       </div>
     `;
   }

@@ -33,7 +33,7 @@ class Lesson(db.Model):
     title = db.Column(db.String(200), nullable=False)
     slug = db.Column(db.String(200), nullable=False)
     description = db.Column(db.Text, default="")
-    theme = db.Column(db.String(50), default="default")
+    theme = db.Column(db.String(50), default="default") # Valores possíveis: "default", "behaviorist", "academic"
     published = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
@@ -63,5 +63,3 @@ class SlideBlock(db.Model):
     type = db.Column(db.String(20), nullable=False)
     payload = db.Column(db.JSON, nullable=False, default={})
     order = db.Column(db.Integer, default=0)
-
-
