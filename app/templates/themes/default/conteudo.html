@@ -3,7 +3,9 @@
     {% if image %}
     <img src="{{ image }}" alt="imagem" class="conteudo-image editable-image" data-block-id="{{ image_block_id }}">
     {% else %}
-    <div class="conteudo-text editable-text" contenteditable="true" data-block-id="{{ text_block_id }}" data-block-index="0">{{ text }}</div>
+    <div class="slide-content">
+      <div class="conteudo-text editable-text" contenteditable="true" data-block-id="{{ text_block_id }}" data-block-index="0">{{ text }}</div>
+    </div>
     {% endif %}
   </div>
   <div class="conteudo-footer editable-text" contenteditable="true" data-block-id="{{ footer_block_id }}" data-block-index="1" style="background-color: {{ bg_color }};">

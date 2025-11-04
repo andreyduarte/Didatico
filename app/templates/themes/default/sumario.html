@@ -7,7 +7,9 @@
     {% if image %}
     <img src="{{ image }}" alt="imagem" class="sumario-image editable-image" data-block-id="{{ image_block_id }}">
     {% else %}
-    <div class="sumario-content editable-text" contenteditable="true" data-block-id="{{ content_block_id }}" data-block-index="2">{{ content }}</div>
+    <div class="slide-content">
+      <div class="sumario-content editable-text" contenteditable="true" data-block-id="{{ content_block_id }}" data-block-index="2">{{ content }}</div>
+    </div>
     {% endif %}
   </div>
 </div>

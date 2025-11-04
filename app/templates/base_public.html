@@ -80,12 +80,61 @@
 
       .slide {
         min-height: 100vh;
+        width: 100vw;
+        display: flex;
+        padding: 0;
+        position: relative;
+      }
+
+      .slide-titulo, .slide-hero, .slide-subtitulo {
         width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+      }
+
+      .slide-conteudo {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .conteudo-main {
+        flex-grow: 1;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 5rem 2rem 2rem;
-        position: relative;
+      }
+
+      .conteudo-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .slide-sumario {
+        width: 100%;
+        display: flex;
+      }
+
+      .sumario-sidebar {
+        width: 33%;
+        padding: 2rem;
+      }
+
+      .sumario-main {
+        width: 67%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .sumario-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
       }
 
       .slide-content {
